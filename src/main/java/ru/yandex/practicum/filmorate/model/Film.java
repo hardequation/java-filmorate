@@ -28,7 +28,7 @@ public class Film {
     private String description;
 
     @NotNull
-    @AfterDate(value = "1985-12-28", message = "Release date should after 1st film birthday")
+    @AfterDate(value = "1895-12-28", message = "Release date should after 1st film birthday")
     private LocalDate releaseDate;
 
     @Positive(message = "Film duration should be positive")
