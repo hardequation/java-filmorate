@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,10 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +22,8 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
 
+    private int nextId = 1;
+
     private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
@@ -31,8 +32,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        validateUser(user);
+    public User create(@Valid @RequestBody User user) {
         user.setId(getNextId());
 
         if (user.getName() == null) {
@@ -43,8 +43,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User newUser) {
-        validateUser(newUser);
+    public User updateUser(@Valid @RequestBody User newUser) {
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
 
@@ -62,33 +61,7 @@ public class UserController {
         throw new NotFoundException("User with id = " + newUser.getId() + " isn't found");
     }
 
-    private void validateUser(User user) {
-
-        if (user == null) {
-            throw new ValidationException("User is null");
-        }
-
-        String email = user.getEmail();
-        if (email == null || !email.contains("@")) {
-            throw new ValidationException("Wrong email");
-        }
-
-        String login = user.getLogin();
-        if (login == null || login.isEmpty() || login.contains(" ")) {
-            throw new ValidationException("Login is not valid");
-        }
-
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Birthday is in the future");
-        }
-    }
-
     private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return nextId++;
     }
 }

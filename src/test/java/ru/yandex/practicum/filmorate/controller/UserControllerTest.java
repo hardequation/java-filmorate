@@ -1,27 +1,34 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserControllerTest {
-
+    private Validator validator;
     private UserController userController;
-
 
     @BeforeEach
     void setUp() {
         userController = new UserController();
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     @Test
@@ -52,9 +59,11 @@ class UserControllerTest {
         user.setEmail("mail@mail.ru");
         user.setBirthday(LocalDate.of(1946, 8, 20));
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.create(user));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
 
-        assertEquals("Login is not valid", exception.getMessage());
+        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        assertEquals("The field must not contain spaces", exception.getMessage());
     }
 
     @Test
@@ -64,9 +73,11 @@ class UserControllerTest {
         user.setEmail("mail@mail.ru");
         user.setBirthday(LocalDate.of(1946, 8, 20));
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.create(user));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
 
-        assertEquals("Login is not valid", exception.getMessage());
+        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        assertEquals("Login can't be empty", exception.getMessage());
     }
 
     @Test
@@ -77,8 +88,11 @@ class UserControllerTest {
         user.setEmail("mail.ru");
         user.setBirthday(LocalDate.of(1946, 8, 20));
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.create(user));
-        assertEquals("Wrong email", exception.getMessage());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+
+        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        assertEquals("Email is not valid", exception.getMessage());
     }
 
     @Test
@@ -89,9 +103,11 @@ class UserControllerTest {
         user.setEmail("test@mail.ru");
         user.setBirthday(LocalDate.now().plusDays(1)); // future date
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.create(user));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
 
-        assertEquals("Birthday is in the future", exception.getMessage());
+        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        assertEquals("Birthday can't be in the future", exception.getMessage());
     }
 
     @Test

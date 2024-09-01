@@ -1,20 +1,27 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FilmControllerTest {
+
+    private Validator validator;
 
     private FilmController filmController;
 
@@ -22,6 +29,9 @@ class FilmControllerTest {
     @BeforeEach
     void setUp() {
         filmController = new FilmController();
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     @Test
@@ -53,47 +63,56 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2017, 8, 20));
         film.setDuration(120L);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.create(film));
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
 
-        assertEquals("Film name is empty", exception.getMessage());
+        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        assertEquals("Film name can't be blank", exception.getMessage());
     }
 
     @Test
-    void testCreateFilmWithoutLogin() {
+    void testCreateFilmWithTooLongDescription() {
         Film film = new Film();
         film.setName("dolore ullamco");
         film.setDescription(("aaaaaaaaaa").repeat(21));
-        film.setReleaseDate(LocalDate.of(1946, 8, 20));
+        film.setReleaseDate(LocalDate.of(1990, 8, 20));
         film.setDuration(100L);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.create(film));
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
 
-        assertEquals("Film description is too long", exception.getMessage());
+        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        assertEquals("Description is too long", exception.getMessage());
     }
 
     @Test
-    void testCreateFilmWithWrongEmail() {
+    void testCreateFilmEarlierThanFirstFilm() {
         Film film = new Film();
         film.setName("dolore ullamco");
         film.setDescription("Some description");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(100L);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.create(film));
-        assertTrue(exception.getMessage().contains("Release date is before"));
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+
+        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        assertEquals("Release date should after 1st film birthday", exception.getMessage());
     }
 
     @Test
-    void testCreateFilmWithFutureBirthday() {
+    void testCreateFilmWithZeroDuration() {
         Film film = new Film();
         film.setName("dolore ullamco");
         film.setDescription("Some description");
         film.setReleaseDate(LocalDate.of(2023, 12, 27));
         film.setDuration(0L);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.create(film));
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
 
-        assertEquals("Film duration must be positive", exception.getMessage());
+        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        assertEquals("Film duration should be positive", exception.getMessage());
     }
 
 

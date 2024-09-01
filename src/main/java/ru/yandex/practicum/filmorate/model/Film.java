@@ -1,6 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.validators.AfterDate;
 
 import java.time.LocalDate;
 
@@ -11,13 +16,21 @@ import java.time.LocalDate;
 @Data
 public class Film {
 
-    Long id;
+    private static final String FIRST_FILM_BIRTHDAY = LocalDate.of(1895, 12, 28).toString();
 
-    String name;
+    private Long id;
 
-    String description;
+    @NotNull
+    @NotBlank(message = "Film name can't be blank")
+    private String name;
 
-    LocalDate releaseDate;
+    @Size(max = 200, message = "Description is too long")
+    private String description;
 
-    Long duration;
+    @NotNull
+    @AfterDate(value = "1985-12-28", message = "Release date should after 1st film birthday")
+    private LocalDate releaseDate;
+
+    @Positive(message = "Film duration should be positive")
+    private Long duration;
 }
