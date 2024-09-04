@@ -35,7 +35,8 @@ public class UserController {
     public User create(@Valid @RequestBody User user) {
         user.setId(getNextId());
 
-        if (user.getName() == null) {
+        String name = user.getName();
+        if (name == null || !name.isBlank()) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
@@ -51,7 +52,7 @@ public class UserController {
             oldUser.setLogin(newLogin);
 
             String newName = newUser.getName();
-            oldUser.setName(newName == null || newName.isEmpty() ? newLogin : newName);
+            oldUser.setName(newName == null || newName.isBlank() ? newLogin : newName);
 
             oldUser.setEmail(newUser.getEmail());
 

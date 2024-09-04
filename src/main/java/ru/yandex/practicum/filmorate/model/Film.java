@@ -20,10 +20,10 @@ public class Film {
 
     private Long id;
 
-    @NotNull
     @NotBlank(message = "Film name can't be blank")
     private String name;
 
+    @NotBlank
     @Size(max = 200, message = "Description is too long")
     private String description;
 
@@ -32,5 +32,5 @@ public class Film {
     private LocalDate releaseDate;
 
     @Positive(message = "Film duration should be positive")
-    private Long duration;
+    private long duration;
 }
