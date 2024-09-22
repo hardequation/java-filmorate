@@ -32,7 +32,7 @@ class FilmServiceTest {
     private FilmStorage filmStorage;
 
     private UserStorage userStorage;
-    
+
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();

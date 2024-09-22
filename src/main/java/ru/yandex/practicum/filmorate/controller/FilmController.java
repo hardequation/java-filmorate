@@ -43,6 +43,7 @@ public class FilmController {
     public Film updateFilm(@Valid @RequestBody Film newFilm) {
         return service.updateFilm(newFilm);
     }
+
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable long id) {
         return service.getFilm(id);

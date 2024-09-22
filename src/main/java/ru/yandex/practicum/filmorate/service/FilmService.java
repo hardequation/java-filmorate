@@ -88,10 +88,10 @@ public class FilmService {
 
     public List<Film> getMostPopularFilms(int length) {
         List<Film> popularFilms = filmStorage.getFilms().stream()
-                .sorted(Comparator.comparingInt((Film o)-> o.getLikedUsersID().size()).reversed())
+                .sorted(Comparator.comparingInt((Film o) -> o.getLikedUsersID().size()).reversed())
                 .toList();
 
-        return length < popularFilms.size() ? popularFilms.subList(0, length) : popularFilms ;
+        return length < popularFilms.size() ? popularFilms.subList(0, length) : popularFilms;
     }
 
     private long getNextId() {
