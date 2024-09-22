@@ -8,6 +8,8 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.AfterDate;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -19,6 +21,8 @@ public class Film {
     private static final String FIRST_FILM_BIRTHDAY = LocalDate.of(1895, 12, 28).toString();
 
     private Long id;
+
+    private Set<Long> likedUsersID = new HashSet<>();
 
     @NotBlank(message = "Film name can't be blank")
     private String name;

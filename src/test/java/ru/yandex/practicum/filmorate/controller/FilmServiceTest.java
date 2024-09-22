@@ -8,6 +8,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -19,16 +24,20 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class FilmControllerTest {
+class FilmServiceTest {
 
     private Validator validator;
+    private FilmService service;
 
-    private FilmController filmController;
+    private FilmStorage filmStorage;
 
-
+    private UserStorage userStorage;
+    
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        userStorage = new InMemoryUserStorage();
+        filmStorage = new InMemoryFilmStorage();
+        service = new FilmService(filmStorage, userStorage);
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
@@ -46,7 +55,7 @@ class FilmControllerTest {
         film.setReleaseDate(releaseDate);
         film.setDuration(duration);
 
-        Film createdFilm = filmController.create(film);
+        Film createdFilm = service.create(film);
 
         assertNotNull(createdFilm.getId(), "Film ID should be generated");
         assertEquals(name, createdFilm.getName());
@@ -123,7 +132,7 @@ class FilmControllerTest {
         film.setDescription("Some description");
         film.setReleaseDate(LocalDate.of(2023, 12, 27));
         film.setDuration(150L);
-        filmController.create(film);
+        service.create(film);
 
         Film updatedFilm = new Film();
         updatedFilm.setId(film.getId());
@@ -132,7 +141,7 @@ class FilmControllerTest {
         updatedFilm.setReleaseDate(LocalDate.of(2022, 12, 27));
         updatedFilm.setDuration(170L);
 
-        Film result = filmController.updateFilm(updatedFilm);
+        Film result = service.updateFilm(updatedFilm);
 
         assertEquals("new dolore ullamco", result.getName());
         assertEquals("New Some description", result.getDescription());
@@ -149,7 +158,7 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2023, 12, 27));
         film.setDuration(150L);
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> filmController.updateFilm(film));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> service.updateFilm(film));
 
         assertEquals("Film with id = 999 isn't found", exception.getMessage());
     }
@@ -161,16 +170,16 @@ class FilmControllerTest {
         film1.setDescription("Description1");
         film1.setReleaseDate(LocalDate.of(1990, 1, 1));
         film1.setDuration(100L);
-        filmController.create(film1);
+        service.create(film1);
 
         Film film2 = new Film();
         film2.setName("Test Name 2");
         film2.setDescription("Description2");
         film2.setReleaseDate(LocalDate.of(1995, 1, 1));
         film2.setDuration(150L);
-        filmController.create(film2);
+        service.create(film2);
 
-        Collection<Film> films = filmController.findAll();
+        Collection<Film> films = service.getFilms();
 
         assertEquals(2, films.size(), "There should be 2 films in the collection");
         assertTrue(films.contains(film1), "Collection should contain film1");
