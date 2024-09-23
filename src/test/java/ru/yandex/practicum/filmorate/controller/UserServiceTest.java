@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 class UserServiceTest {
     private Validator validator;
@@ -160,7 +161,7 @@ class UserServiceTest {
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> service.updateUser(updatedUser));
 
-        assertEquals("User with id = 999 isn't found", exception.getMessage());
+        assertEquals(USER_NOT_FOUND + 999, exception.getMessage());
     }
 
     @Test

@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
 
 class FilmServiceTest {
 
@@ -160,7 +161,7 @@ class FilmServiceTest {
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> service.updateFilm(film));
 
-        assertEquals("Film with id = 999 isn't found", exception.getMessage());
+        assertEquals(FILM_NOT_FOUND + 999, exception.getMessage());
     }
 
     @Test
