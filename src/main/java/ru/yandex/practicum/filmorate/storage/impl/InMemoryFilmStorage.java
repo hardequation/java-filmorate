@@ -4,22 +4,27 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
 
+    private long nextId = 1;
+
     @Override
     public Collection<Film> getFilms() {
-        return films.values();
+        return new ArrayList<>(films.values());
     }
 
     @Override
     public Film add(Film film) {
+        film.setId(getNextId());
         films.put(film.getId(), film);
         return film;
     }
@@ -36,7 +41,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilm(long id) {
-        return films.get(id);
+    public Optional<Film> getFilm(long id) {
+        return Optional.ofNullable(films.get(id));
+    }
+
+    private long getNextId() {
+        return nextId++;
     }
 }

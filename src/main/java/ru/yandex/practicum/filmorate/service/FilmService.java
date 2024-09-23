@@ -13,13 +13,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
+
 @Service
 public class FilmService {
-    FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
 
-    UserStorage userStorage;
-
-    private long nextId = 1;
+    private final UserStorage userStorage;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
@@ -32,55 +33,47 @@ public class FilmService {
     }
 
     public Film getFilm(long id) {
-        if (!filmStorage.contains(id)) {
-            throw new NotFoundException("There is no film with such id:" + id);
-        }
-        return filmStorage.getFilm(id);
+        return filmStorage.getFilm(id).orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + id));
     }
 
     public Film create(Film film) {
-        film.setId(getNextId());
         filmStorage.add(film);
         return film;
     }
 
     public Film updateFilm(Film newFilm) {
         if (!filmStorage.contains(newFilm.getId())) {
-            throw new NotFoundException("Film with id = " + newFilm.getId() + " isn't found");
+            throw new NotFoundException(FILM_NOT_FOUND + newFilm.getId());
         }
         filmStorage.update(newFilm);
         return newFilm;
     }
 
     public void addLike(Long filmId, Long userId) {
-        if (!filmStorage.contains(filmId)) {
-            throw new NotFoundException("Unable to find film with id " + filmId);
-        }
-
         if (!userStorage.contains(userId)) {
-            throw new NotFoundException("Unable to find user with id " + userId);
+            throw new NotFoundException(USER_NOT_FOUND + userId);
         }
 
-        Set<Long> likes = filmStorage.getFilm(filmId).getLikedUsersID();
+        Film film = filmStorage.getFilm(filmId)
+                .orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + filmId));
+        Set<Long> likes = film.getLikedUsersID();
         if (likes.contains(userId)) {
-            throw new ValidationException("User has already liked this film");
+            throw new ValidationException("User with id " + userId + " has already liked film with id " + filmId);
         }
 
         likes.add(userId);
     }
 
     public void removeLike(Long filmId, Long userId) {
-        if (!filmStorage.contains(filmId)) {
-            throw new NotFoundException("Unable to find film with id " + filmId);
-        }
-
         if (!userStorage.contains(userId)) {
-            throw new NotFoundException("Unable to find user with id " + userId);
+            throw new NotFoundException(USER_NOT_FOUND + userId);
         }
 
-        Set<Long> likes = filmStorage.getFilm(filmId).getLikedUsersID();
+        Film film = filmStorage.getFilm(filmId)
+                .orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + filmId));
+        Set<Long> likes = film.getLikedUsersID();
         if (!likes.contains(userId)) {
-            throw new ValidationException("User hasn't liked this film yet");
+            throw new ValidationException("User " + userId + " hasn't liked film yet with id " + filmId);
         }
 
         likes.remove(userId);
@@ -92,9 +85,5 @@ public class FilmService {
                 .toList();
 
         return length < popularFilms.size() ? popularFilms.subList(0, length) : popularFilms;
-    }
-
-    private long getNextId() {
-        return nextId++;
     }
 }

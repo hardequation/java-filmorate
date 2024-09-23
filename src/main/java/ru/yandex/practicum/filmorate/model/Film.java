@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -22,6 +23,7 @@ public class Film {
 
     private Long id;
 
+    @JsonIgnore
     private Set<Long> likedUsersID = new HashSet<>();
 
     @NotBlank(message = "Film name can't be blank")

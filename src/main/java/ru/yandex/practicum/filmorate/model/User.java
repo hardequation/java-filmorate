@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +19,7 @@ public class User {
 
     private String name;
 
+    @JsonIgnore
     private Set<Long> friends = new HashSet<>();
 
     @NotBlank(message = "Login can't be empty")
