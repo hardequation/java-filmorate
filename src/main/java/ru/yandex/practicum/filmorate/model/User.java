@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,8 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
@@ -15,6 +18,9 @@ public class User {
     private Long id;
 
     private String name;
+
+    @JsonIgnore
+    private Set<Long> friends = new HashSet<>();
 
     @NotBlank(message = "Login can't be empty")
     @Pattern(regexp = "^[\\S]+$", message = "The field must not contain spaces")

@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -18,14 +21,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
-class UserControllerTest {
+class UserServiceTest {
     private Validator validator;
-    private UserController userController;
+    private UserService service;
+    private UserStorage storage;
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        storage = new InMemoryUserStorage();
+        service = new UserService(storage);
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
@@ -42,8 +48,7 @@ class UserControllerTest {
         user.setName(name);
         user.setEmail(email);
         user.setBirthday(birthday);
-
-        User createdUser = userController.create(user);
+        User createdUser = service.create(user);
 
         assertNotNull(createdUser.getId(), "User ID should be generated");
         assertEquals(login, createdUser.getLogin());
@@ -117,7 +122,7 @@ class UserControllerTest {
         user.setEmail("test@mail.ru");
         user.setBirthday(LocalDate.of(1946, 8, 20));
 
-        User createdUser = userController.create(user);
+        User createdUser = service.create(user);
         assertEquals("dolore", createdUser.getName());
     }
 
@@ -128,7 +133,7 @@ class UserControllerTest {
         user.setName("Test Name");
         user.setEmail("test@example.com");
         user.setBirthday(LocalDate.of(1990, 1, 1));
-        userController.create(user);
+        service.create(user);
 
         User updatedUser = new User();
         updatedUser.setId(user.getId());
@@ -137,7 +142,7 @@ class UserControllerTest {
         updatedUser.setEmail("new@example.com");
         updatedUser.setBirthday(LocalDate.of(1994, 1, 1));
 
-        User result = userController.updateUser(updatedUser);
+        User result = service.updateUser(updatedUser);
 
         assertEquals("newlogin", result.getLogin());
         assertEquals("New Name", result.getName());
@@ -154,9 +159,9 @@ class UserControllerTest {
         updatedUser.setEmail("new@example.com");
         updatedUser.setBirthday(LocalDate.of(1990, 1, 1));
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> userController.updateUser(updatedUser));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> service.updateUser(updatedUser));
 
-        assertEquals("User with id = 999 isn't found", exception.getMessage());
+        assertEquals(USER_NOT_FOUND + 999, exception.getMessage());
     }
 
     @Test
@@ -166,16 +171,16 @@ class UserControllerTest {
         user1.setName("Test Name 1");
         user1.setEmail("test1@example.com");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
-        userController.create(user1);
+        service.create(user1);
 
         User user2 = new User();
         user2.setLogin("testlogin2");
         user2.setName("Test Name 2");
         user2.setEmail("test2@example.com");
         user2.setBirthday(LocalDate.of(1995, 5, 5));
-        userController.create(user2);
+        service.create(user2);
 
-        Collection<User> users = userController.findAll();
+        Collection<User> users = service.getUsers();
 
         assertEquals(2, users.size(), "There should be 2 users in the collection");
         assertTrue(users.contains(user1), "Collection should contain user1");
