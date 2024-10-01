@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.validators.AfterDate;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,4 +40,9 @@ public class Film {
 
     @Positive(message = "Film duration should be positive")
     private long duration;
+
+    private List<String> genres;
+
+    @Size(max = 5)
+    private String mpaRating;
 }

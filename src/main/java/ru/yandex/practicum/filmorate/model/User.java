@@ -10,6 +10,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -33,5 +34,7 @@ public class User {
     @NotNull
     @PastOrPresent(message = "Birthday can't be in the future")
     private LocalDate birthday;
+
+    private List<Boolean> friendshipStatuses;
 
 }
