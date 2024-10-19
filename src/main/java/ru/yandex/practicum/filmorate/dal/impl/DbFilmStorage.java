@@ -29,6 +29,7 @@ public class DbFilmStorage implements FilmStorage {
     public DbFilmStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public Collection<Film> findAll() {
         return jdbcTemplate.query("SELECT * FROM films", new FilmRowMapper());

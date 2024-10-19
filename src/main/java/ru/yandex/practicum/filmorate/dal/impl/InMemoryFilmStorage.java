@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,6 +64,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void removeAll() {
         films.clear();
     }
+
     private int getNextId() {
         return nextId++;
     }

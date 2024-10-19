@@ -1,10 +1,12 @@
 # Project description
+
 Filmorate project
 
 *ER-diagram*
 ![ER Diagram](./images/ER_diagram.png)
 
 ## Link to ER diagram in dbdiagram.io
+
 https://dbdiagram.io/d/66fc3f3bfb079c7ebd0086cb
 
 ## Main queries based on data structure FROM diagram
