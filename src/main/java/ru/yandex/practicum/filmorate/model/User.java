@@ -16,12 +16,12 @@ import java.util.Set;
 @Data
 public class User {
 
-    private Long id;
+    private Integer id;
 
     private String name;
 
     @JsonIgnore
-    private Set<Long> friends = new HashSet<>();
+    private Set<Integer> friends = new HashSet<>();
 
     @NotBlank(message = "Login can't be empty")
     @Pattern(regexp = "^[\\S]+$", message = "The field must not contain spaces")

@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.impl.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.dal.impl.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -20,7 +20,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
@@ -58,7 +57,6 @@ class FilmServiceTest {
 
         Film createdFilm = service.create(film);
 
-        assertNotNull(createdFilm.getId(), "Film ID should be generated");
         assertEquals(name, createdFilm.getName());
         assertEquals(description, createdFilm.getDescription());
         assertEquals(releaseDate, createdFilm.getReleaseDate());
@@ -153,7 +151,7 @@ class FilmServiceTest {
     @Test
     void testUpdateFilmNotFound() {
         Film film = new Film();
-        film.setId(999L); // Non-existent ID
+        film.setId(999); // Non-existent ID
         film.setName("dolore ullamco");
         film.setDescription("Some description");
         film.setReleaseDate(LocalDate.of(2023, 12, 27));

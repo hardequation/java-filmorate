@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.impl.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -153,7 +153,7 @@ class UserServiceTest {
     @Test
     void testUpdateUserNotFound() {
         User updatedUser = new User();
-        updatedUser.setId(999L); // Non-existent ID
+        updatedUser.setId(999); // Non-existent ID
         updatedUser.setLogin("newlogin");
         updatedUser.setName("New Name");
         updatedUser.setEmail("new@example.com");

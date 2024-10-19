@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,70 +18,71 @@ import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
+    private final UserStorage userStorage;
 
-    private final UserStorage storage;
-
-    public Collection<User> getUsers() {
-        return new ArrayList<>(storage.getUsers());
+    @Autowired
+    public UserService(@Qualifier("dbUserStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
     }
 
-    public User getUser(long id) {
-        return storage.getUser(id).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + id));
+    public Collection<User> getUsers() {
+        return new ArrayList<>(userStorage.findAll());
+    }
+
+    public User getUser(int id) {
+        return userStorage.findById(id).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + id));
     }
 
     public User create(User user) {
         setName(user);
-        storage.add(user);
+        userStorage.add(user);
         return user;
     }
 
     public User updateUser(User newUser) {
-        if (!storage.contains(newUser.getId())) {
+        if (!userStorage.contains(newUser.getId())) {
             throw new NotFoundException(USER_NOT_FOUND + newUser.getId());
         }
 
         setName(newUser);
 
-        storage.update(newUser);
+        userStorage.update(newUser);
         return newUser;
     }
 
-    public void addFriend(Long userId, Long newFriendId) {
-        User user = storage.getUser(userId)
+    public void addFriend(Integer userId, Integer newFriendId) {
+        User user = userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + userId));
-        User friend = storage.getUser(newFriendId)
+        User friend = userStorage.findById(newFriendId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + newFriendId));
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> friends = friend.getFriends();
+        Set<Integer> userFriends = user.getFriends();
+        Set<Integer> friends = friend.getFriends();
         if (userFriends.contains(newFriendId) || friends.contains(userId)) {
             throw new ValidationException("Users with ids " + userId + " and " + newFriendId + " are already friends");
         }
 
-        userFriends.add(newFriendId);
-        friends.add(userId);
+        userStorage.addFriendship(userId, newFriendId, true);
     }
 
-    public void removeFriend(Long userId, Long friendId) {
-        User user = storage.getUser(userId)
+    public void removeFriend(Integer userId, Integer friendId) {
+        User user = userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + userId));
-        User friend = storage.getUser(friendId)
+        User friend = userStorage.findById(friendId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + friendId));
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> friends = friend.getFriends();
+        Set<Integer> userFriends = user.getFriends();
+        Set<Integer> friends = friend.getFriends();
         if (!userFriends.contains(friendId) || !friends.contains(userId)) {
             return;
         }
 
-        userFriends.remove(friendId);
-        friends.remove(userId);
+        userStorage.removeFriendship(userId, friendId);
     }
 
-    public List<User> getUserFriends(Long id) {
-        User user = storage.getUser(id).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + id));
+    public List<User> getUserFriends(Integer id) {
+        User user = userStorage.findById(id).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + id));
         return user.getFriends().stream()
-                .map(friendId -> storage.getUser(friendId)
+                .map(friendId -> userStorage.findById(friendId)
                         .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + friendId)))
                 .toList();
     }
