@@ -6,13 +6,14 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.impl.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.dal.impl.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -20,7 +21,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
@@ -50,15 +50,15 @@ class FilmServiceTest {
         String description = "Some description";
         LocalDate releaseDate = LocalDate.of(2015, 8, 20);
         Long duration = 100L;
-        Film film = new Film();
-        film.setName(name);
-        film.setDescription(description);
-        film.setReleaseDate(releaseDate);
-        film.setDuration(duration);
+        Film film = Film.builder()
+                .name(name)
+                .description(description)
+                .releaseDate(releaseDate)
+                .duration(duration)
+                .build();
 
         Film createdFilm = service.create(film);
 
-        assertNotNull(createdFilm.getId(), "Film ID should be generated");
         assertEquals(name, createdFilm.getName());
         assertEquals(description, createdFilm.getDescription());
         assertEquals(releaseDate, createdFilm.getReleaseDate());
@@ -67,80 +67,82 @@ class FilmServiceTest {
 
     @Test
     void testCreateFilmWithEmptyName() {
-        Film film = new Film();
+        CreateFilmDto film = new CreateFilmDto();
         film.setName("");
         film.setDescription("Some description");
         film.setReleaseDate(LocalDate.of(2017, 8, 20));
         film.setDuration(120L);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<CreateFilmDto>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateFilmDto> exception = violations.stream().findFirst().get();
         assertEquals("Film name can't be blank", exception.getMessage());
     }
 
     @Test
     void testCreateFilmWithTooLongDescription() {
-        Film film = new Film();
+        CreateFilmDto film = new CreateFilmDto();
         film.setName("dolore ullamco");
         film.setDescription(("aaaaaaaaaa").repeat(21));
         film.setReleaseDate(LocalDate.of(1990, 8, 20));
         film.setDuration(100L);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<CreateFilmDto>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateFilmDto> exception = violations.stream().findFirst().get();
         assertEquals("Description is too long", exception.getMessage());
     }
 
     @Test
     void testCreateFilmEarlierThanFirstFilm() {
-        Film film = new Film();
+        CreateFilmDto film = new CreateFilmDto();
         film.setName("dolore ullamco");
         film.setDescription("Some description");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(100L);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<CreateFilmDto>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateFilmDto> exception = violations.stream().findFirst().get();
         assertEquals("Release date should after 1st film birthday", exception.getMessage());
     }
 
     @Test
     void testCreateFilmWithZeroDuration() {
-        Film film = new Film();
+        CreateFilmDto film = new CreateFilmDto();
         film.setName("dolore ullamco");
         film.setDescription("Some description");
         film.setReleaseDate(LocalDate.of(2023, 12, 27));
         film.setDuration(0L);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<CreateFilmDto>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<Film> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateFilmDto> exception = violations.stream().findFirst().get();
         assertEquals("Film duration should be positive", exception.getMessage());
     }
 
 
     @Test
     void testUpdateFilmSuccess() {
-        Film film = new Film();
-        film.setName("dolore ullamco");
-        film.setDescription("Some description");
-        film.setReleaseDate(LocalDate.of(2023, 12, 27));
-        film.setDuration(150L);
+        Film film = Film.builder()
+                .name("dolore ullamco")
+                .description("Some description")
+                .releaseDate(LocalDate.of(2023, 12, 27))
+                .duration(150L)
+                .build();
         service.create(film);
 
-        Film updatedFilm = new Film();
-        updatedFilm.setId(film.getId());
-        updatedFilm.setName("new dolore ullamco");
-        updatedFilm.setDescription("New Some description");
-        updatedFilm.setReleaseDate(LocalDate.of(2022, 12, 27));
-        updatedFilm.setDuration(170L);
+        Film updatedFilm = Film.builder()
+                .id(film.getId())
+                .name("new dolore ullamco")
+                .description("New Some description")
+                .releaseDate(LocalDate.of(2022, 12, 27))
+                .duration(170L)
+                .build();
 
         Film result = service.updateFilm(updatedFilm);
 
@@ -152,12 +154,13 @@ class FilmServiceTest {
 
     @Test
     void testUpdateFilmNotFound() {
-        Film film = new Film();
-        film.setId(999L); // Non-existent ID
-        film.setName("dolore ullamco");
-        film.setDescription("Some description");
-        film.setReleaseDate(LocalDate.of(2023, 12, 27));
-        film.setDuration(150L);
+        Film film = Film.builder()
+                .id(999)
+                .name("dolore ullamco")
+                .description("Some description")
+                .releaseDate(LocalDate.of(2023, 12, 27))
+                .duration(150L)
+                .build();
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> service.updateFilm(film));
 
@@ -166,18 +169,20 @@ class FilmServiceTest {
 
     @Test
     void testFindAllFilms() {
-        Film film1 = new Film();
-        film1.setName("Test Name 1");
-        film1.setDescription("Description1");
-        film1.setReleaseDate(LocalDate.of(1990, 1, 1));
-        film1.setDuration(100L);
+        Film film1 = Film.builder()
+                .name("Test Name 1")
+                .description("Description1")
+                .releaseDate(LocalDate.of(1990, 1, 1))
+                .duration(100L)
+                .build();
         service.create(film1);
 
-        Film film2 = new Film();
-        film2.setName("Test Name 2");
-        film2.setDescription("Description2");
-        film2.setReleaseDate(LocalDate.of(1995, 1, 1));
-        film2.setDuration(150L);
+        Film film2 = Film.builder()
+                .name("Test Name 2")
+                .description("Description2")
+                .releaseDate(LocalDate.of(1995, 1, 1))
+                .duration(150L)
+                .build();
         service.create(film2);
 
         Collection<Film> films = service.getFilms();
