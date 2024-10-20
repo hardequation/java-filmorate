@@ -46,12 +46,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriendship(Integer userId, Integer friendId, boolean confirmed) {
-        users.get(userId).getFriends().add(friendId);
+        users.get(userId).getFriendshipStatuses().put(friendId, confirmed);
     }
 
     @Override
     public void removeFriendship(Integer userId, Integer friendId) {
-        users.get(userId).getFriends().remove(friendId);
+        users.get(userId).getFriendshipStatuses().remove(friendId);
     }
 
     @Override

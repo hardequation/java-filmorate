@@ -1,12 +1,18 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
-    Collection<Film> findAll();
+    List<Film> findAllFilms();
+
+    List<Genre> findAllGenres();
+
+    List<MpaRating> findAllMpaRatings();
 
     Film add(Film film);
 
@@ -14,9 +20,17 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    boolean contains(Integer filmId);
+    boolean containsFilm(Integer filmId);
 
-    Optional<Film> findById(int id);
+    boolean containsRating(Integer ratingId);
+
+    boolean containsGenre(Integer genreId);
+
+    Optional<Film> findFilmById(int id);
+
+    Optional<Genre> findGenreById(int id);
+
+    Optional<MpaRating> findMpaRatingById(int id);
 
     void addLike(int filmId, int userId);
 

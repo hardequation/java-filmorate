@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.dal.impl;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -18,8 +20,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     private int nextId = 1;
 
     @Override
-    public Collection<Film> findAll() {
+    public List<Film> findAllFilms() {
         return new ArrayList<>(films.values());
+    }
+
+    @Override
+    public List<Genre> findAllGenres() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<MpaRating> findAllMpaRatings() {
+        return new ArrayList<>();
     }
 
     @Override
@@ -41,13 +53,33 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public boolean contains(Integer filmId) {
+    public boolean containsFilm(Integer filmId) {
         return films.containsKey(filmId);
     }
 
     @Override
-    public Optional<Film> findById(int id) {
+    public boolean containsRating(Integer ratingId) {
+        return false;
+    }
+
+    @Override
+    public boolean containsGenre(Integer genreId) {
+        return false;
+    }
+
+    @Override
+    public Optional<Film> findFilmById(int id) {
         return Optional.ofNullable(films.get(id));
+    }
+
+    @Override
+    public Optional<Genre> findGenreById(int id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<MpaRating> findMpaRatingById(int id) {
+        return Optional.empty();
     }
 
     @Override

@@ -14,6 +14,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -78,9 +80,17 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public Optional<User> findById(int id) {
-        String sqlQuery = "SELECT * FROM users WHERE user_id = ?";
+        String findUser = "SELECT * FROM users WHERE user_id = ?";
+        String getFriendshipStatuses = "SELECT friend_id, confirmed FROM friendship_statuses WHERE user_id = ?";
+        Map<Integer, Boolean> statuses = new HashMap<>();
+        jdbcTemplate.query(getFriendshipStatuses, new Object[]{id}, (rs, rowNum) -> {
+            statuses.put(rs.getInt("friend_id"), rs.getBoolean("confirmed"));
+            return null;
+        });
+
         try {
-            User user = jdbcTemplate.queryForObject(sqlQuery, new UserRowMapper(), id);
+            User user = jdbcTemplate.queryForObject(findUser, new UserRowMapper(), id);
+            if (user != null) user.setFriendshipStatuses(statuses);
             return Optional.ofNullable(user);
         } catch (Exception e) {
             return Optional.empty();
@@ -89,7 +99,7 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public void addFriendship(Integer userId, Integer friendId, boolean confirmed) {
-        String sql = "INSERT INTO friendship_statuses (user_id, friend_id, status) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO friendship_statuses (user_id, friend_id, confirmed) VALUES (?, ?, ?)";
 
         jdbcTemplate.update(sql, userId, friendId, confirmed);
     }

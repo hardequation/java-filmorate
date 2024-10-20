@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,12 +40,14 @@ class DbFilmStorageIntegrationTest {
     @BeforeEach
     void setUp() {
         storage = new DbFilmStorage(template);
-        film = new Film();
-        film.setName("Name");
-        film.setDescription("Login");
-        film.setDuration(150L);
-        film.setMpaRatingId(2);
-        film.setReleaseDate(LocalDate.of(1980, 10, 1));
+        film = Film.builder()
+                .name("Name")
+                .description("Login")
+                .duration(150L)
+                .mpaId(2)
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new ArrayList<>())
+                .build();
     }
 
     @AfterEach
@@ -54,11 +57,11 @@ class DbFilmStorageIntegrationTest {
 
     @Test
     void testAddFilm() {
-        assertTrue(storage.findAll().isEmpty());
+        assertTrue(storage.findAllFilms().isEmpty());
 
         Film addedFilm = storage.add(film);
 
-        assertEquals(1, storage.findAll().size());
+        assertEquals(1, storage.findAllFilms().size());
         assertEquals(film.getName(), addedFilm.getName());
     }
 
@@ -77,8 +80,8 @@ class DbFilmStorageIntegrationTest {
     void testContains() {
         Film addedFilm = storage.add(film);
 
-        assertTrue(storage.contains(addedFilm.getId()));
-        assertFalse(storage.contains(addedFilm.getId() + 1));
+        assertTrue(storage.containsFilm(addedFilm.getId()));
+        assertFalse(storage.containsFilm(addedFilm.getId() + 1));
     }
 
     @Test
@@ -104,7 +107,7 @@ class DbFilmStorageIntegrationTest {
     void testFindFilmById() {
         Film addedFilm = storage.add(film);
 
-        Optional<Film> filmOptional = storage.findById(addedFilm.getId());
+        Optional<Film> filmOptional = storage.findFilmById(addedFilm.getId());
 
         assertThat(filmOptional)
                 .isPresent()
@@ -116,10 +119,10 @@ class DbFilmStorageIntegrationTest {
     @Test
     void testRemoveAll() {
         storage.add(film);
-        assertEquals(1, storage.findAll().size());
+        assertEquals(1, storage.findAllFilms().size());
 
         storage.removeAll();
 
-        assertTrue(storage.findAll().isEmpty());
+        assertTrue(storage.findAllFilms().isEmpty());
     }
 }

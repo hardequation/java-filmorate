@@ -8,13 +8,16 @@ import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.GENRE_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.RATING_NOT_FOUND;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Service
@@ -30,12 +33,28 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    public Collection<Film> getFilms() {
-        return filmStorage.findAll();
+    public List<Film> getFilms() {
+        return filmStorage.findAllFilms();
     }
 
-    public Film getFilm(int id) {
-        return filmStorage.findById(id).orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + id));
+    public List<Genre> getGenres() {
+        return filmStorage.findAllGenres();
+    }
+
+    public List<MpaRating> getRatings() {
+        return filmStorage.findAllMpaRatings();
+    }
+
+    public Film findFilmById(int id) {
+        return filmStorage.findFilmById(id).orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + id));
+    }
+
+    public Genre findGenreById(int id) {
+        return filmStorage.findGenreById(id).orElseThrow(() -> new NotFoundException(RATING_NOT_FOUND + id));
+    }
+
+    public MpaRating findMpaRatingById(int id) {
+        return filmStorage.findMpaRatingById(id).orElseThrow(() -> new NotFoundException(GENRE_NOT_FOUND + id));
     }
 
     public Film create(Film film) {
@@ -44,7 +63,7 @@ public class FilmService {
     }
 
     public Film updateFilm(Film newFilm) {
-        if (!filmStorage.contains(newFilm.getId())) {
+        if (!filmStorage.containsFilm(newFilm.getId())) {
             throw new NotFoundException(FILM_NOT_FOUND + newFilm.getId());
         }
         filmStorage.update(newFilm);
@@ -56,7 +75,7 @@ public class FilmService {
             throw new NotFoundException(USER_NOT_FOUND + userId);
         }
 
-        Film film = filmStorage.findById(filmId)
+        Film film = filmStorage.findFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + filmId));
         Set<Integer> likes = film.getLikedUsersID();
         if (likes.contains(userId)) {
@@ -74,7 +93,7 @@ public class FilmService {
             throw new NotFoundException(USER_NOT_FOUND + userId);
         }
 
-        Film film = filmStorage.findById(filmId)
+        Film film = filmStorage.findFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + filmId));
         Set<Integer> likes = film.getLikedUsersID();
 
@@ -89,7 +108,7 @@ public class FilmService {
     }
 
     public List<Film> getMostPopularFilms(int length) {
-        List<Film> popularFilms = filmStorage.findAll().stream()
+        List<Film> popularFilms = filmStorage.findAllFilms().stream()
                 .sorted(Comparator.comparingInt((Film o) -> o.getLikedUsersID().size()).reversed())
                 .toList();
 

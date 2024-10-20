@@ -51,28 +51,36 @@ public class UserService {
         return newUser;
     }
 
-    public void addFriend(Integer userId, Integer newFriendId) {
-        User user = userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + userId));
+    public User addFriend(Integer userId, Integer newFriendId) {
+        if (!userStorage.contains(userId)) {
+            throw new NotFoundException(USER_NOT_FOUND + userId);
+        }
+        if (!userStorage.contains(newFriendId)) {
+            throw new NotFoundException(USER_NOT_FOUND + newFriendId);
+        }
         User friend = userStorage.findById(newFriendId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + newFriendId));
-        Set<Integer> userFriends = user.getFriends();
-        Set<Integer> friends = friend.getFriends();
+        List<Integer> userFriends = getUserFriendIds(userId);
+        List<Integer> friends = getUserFriendIds(newFriendId);
         if (userFriends.contains(newFriendId) || friends.contains(userId)) {
             throw new ValidationException("Users with ids " + userId + " and " + newFriendId + " are already friends");
         }
 
         userStorage.addFriendship(userId, newFriendId, true);
+        return friend;
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        User user = userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + userId));
-        User friend = userStorage.findById(friendId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + friendId));
-        Set<Integer> userFriends = user.getFriends();
-        Set<Integer> friends = friend.getFriends();
-        if (!userFriends.contains(friendId) || !friends.contains(userId)) {
+        List<Integer> userFriends = getUserFriendIds(userId);
+        if (!userStorage.contains(userId)) {
+            throw new NotFoundException("Can't remove friend of non-existing user with id " + userId);
+        }
+
+        if (!userStorage.contains(friendId)) {
+            throw new NotFoundException("Can't remove non-existing friend with id " + friendId);
+        }
+
+        if (!userFriends.contains(friendId)) {
             return;
         }
 
@@ -81,9 +89,19 @@ public class UserService {
 
     public List<User> getUserFriends(Integer id) {
         User user = userStorage.findById(id).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + id));
-        return user.getFriends().stream()
+        Set<Integer> friendIds = user.getFriendshipStatuses().keySet();
+        return friendIds.stream()
+                .filter(friendId -> user.getFriendshipStatuses().get(friendId))
                 .map(friendId -> userStorage.findById(friendId)
                         .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + friendId)))
+                .toList();
+    }
+
+    public List<Integer> getUserFriendIds(Integer id) {
+        User user = userStorage.findById(id).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND + id));
+        Set<Integer> friendIds = user.getFriendshipStatuses().keySet();
+        return friendIds.stream()
+                .filter(friendId -> user.getFriendshipStatuses().get(friendId))
                 .toList();
     }
 
