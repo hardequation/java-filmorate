@@ -50,7 +50,7 @@ class FilmServiceTest {
     @BeforeEach
     void setUp() {
         userStorage = new DbUserStorage(template);
-        filmStorage = new DbFilmStorage(template, genreStorage);
+        filmStorage = new DbFilmStorage(template, genreStorage, ratingStorage);
         ratingStorage = new DbRatingStorage(template);
         genreStorage = new DbGenreStorage(template);
         service = new FilmService(

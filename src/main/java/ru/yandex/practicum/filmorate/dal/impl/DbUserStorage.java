@@ -14,9 +14,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -84,16 +82,9 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public Optional<User> findById(int id) {
-        String findUser = "SELECT * FROM users WHERE user_id = ?";
-        String getFriendshipStatuses = "SELECT friend_id, confirmed FROM friendship_statuses WHERE user_id = ?";
-        Map<Integer, Boolean> statuses = new HashMap<>();
-        jdbcTemplate.query(getFriendshipStatuses, new Object[]{id}, (rs, rowNum) -> {
-            statuses.put(rs.getInt("friend_id"), rs.getBoolean("confirmed"));
-            return null;
-        });
-
+        String sql = "SELECT * FROM users WHERE user_id = ?";
         try {
-            User user = jdbcTemplate.queryForObject(findUser, userRowMapper, id);
+            User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
             return Optional.ofNullable(user);
         } catch (Exception e) {
             return Optional.empty();

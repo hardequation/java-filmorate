@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -22,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
-@Import(DbFilmStorage.class)
+@Import({DbUserStorage.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DbUserStorageIntegrationTest {

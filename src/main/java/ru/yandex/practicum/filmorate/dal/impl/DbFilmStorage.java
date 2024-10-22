@@ -149,10 +149,6 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public void removeAll() {
         String removeFilmsSql = "DELETE FROM films";
-        String removeGenresSql = "DELETE FROM films_genres";
-        String removeLikesSql = "DELETE FROM film_likes";
-        jdbcTemplate.update(removeGenresSql);
-        jdbcTemplate.update(removeLikesSql);
         jdbcTemplate.update(removeFilmsSql);
     }
 

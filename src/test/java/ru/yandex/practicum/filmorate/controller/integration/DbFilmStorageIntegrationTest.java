@@ -10,13 +10,16 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.GenreStorage;
+import ru.yandex.practicum.filmorate.dal.RatingStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
+import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
+import ru.yandex.practicum.filmorate.dal.impl.DbRatingStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
-@Import(DbFilmStorage.class)
+@Import({DbFilmStorage.class, DbGenreStorage.class, DbRatingStorage.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DbFilmStorageIntegrationTest {
@@ -34,62 +37,67 @@ class DbFilmStorageIntegrationTest {
     @Autowired
     private final JdbcTemplate template;
 
-    private DbFilmStorage storage;
+    private DbFilmStorage filmStorage;
 
     private GenreStorage genreStorage;
+
+    private RatingStorage ratingStorage;
 
     private Film film = null;
 
     @BeforeEach
     void setUp() {
-        storage = new DbFilmStorage(template, genreStorage);
+        genreStorage = new DbGenreStorage(template);
+        ratingStorage = new DbRatingStorage(template);
+        filmStorage = new DbFilmStorage(template, genreStorage, ratingStorage);
+
         film = Film.builder()
                 .name("Name")
                 .description("Login")
                 .duration(150L)
                 .mpaId(2)
                 .releaseDate(LocalDate.of(1980, 10, 1))
-                .genres(new ArrayList<>())
+                .genres(new LinkedHashSet<>())
                 .build();
     }
 
     @AfterEach
     void finish() {
-        storage.removeAll();
+        filmStorage.removeAll();
     }
 
     @Test
     void testAddFilm() {
-        assertTrue(storage.findAllFilms().isEmpty());
+        assertTrue(filmStorage.findAllFilms().isEmpty());
 
-        Film addedFilm = storage.add(film);
+        Film addedFilm = filmStorage.add(film);
 
-        assertEquals(1, storage.findAllFilms().size());
+        assertEquals(1, filmStorage.findAllFilms().size());
         assertEquals(film.getName(), addedFilm.getName());
     }
 
     @Test
     void testUpdateFilm() {
-        storage.add(film);
+        filmStorage.add(film);
 
         String newName = "NewName";
         film.setName(newName);
-        storage.update(film);
+        filmStorage.update(film);
 
         assertEquals(newName, film.getName());
     }
 
     @Test
     void testContains() {
-        Film addedFilm = storage.add(film);
+        Film addedFilm = filmStorage.add(film);
 
-        assertTrue(storage.containsFilm(addedFilm.getId()));
-        assertFalse(storage.containsFilm(addedFilm.getId() + 1));
+        assertTrue(filmStorage.containsFilm(addedFilm.getId()));
+        assertFalse(filmStorage.containsFilm(addedFilm.getId() + 1));
     }
 
     @Test
     void testLikes() {
-        Film addedFilm = storage.add(film);
+        Film addedFilm = filmStorage.add(film);
         DbUserStorage userStorage = new DbUserStorage(template);
 
         User user = User.builder()
@@ -99,9 +107,9 @@ class DbFilmStorageIntegrationTest {
                 .birthday(LocalDate.of(1990, 12, 14))
                 .build();
         User addedUser = userStorage.add(user);
-        storage.addLike(addedFilm.getId(), addedUser.getId());
+        filmStorage.addLike(addedFilm.getId(), addedUser.getId());
 
-        List<Integer> likes = storage.getLikesByFilmId(addedFilm.getId());
+        List<Integer> likes = filmStorage.getLikesByFilmId(addedFilm.getId());
 
         assertEquals(1, likes.size());
         assertEquals(addedUser.getId(), likes.getFirst());
@@ -109,9 +117,9 @@ class DbFilmStorageIntegrationTest {
 
     @Test
     void testFindFilmById() {
-        Film addedFilm = storage.add(film);
+        Film addedFilm = filmStorage.add(film);
 
-        Optional<Film> filmOptional = storage.findFilmById(addedFilm.getId());
+        Optional<Film> filmOptional = filmStorage.findFilmById(addedFilm.getId());
 
         assertThat(filmOptional)
                 .isPresent()
@@ -122,11 +130,11 @@ class DbFilmStorageIntegrationTest {
 
     @Test
     void testRemoveAll() {
-        storage.add(film);
-        assertEquals(1, storage.findAllFilms().size());
+        filmStorage.add(film);
+        assertEquals(1, filmStorage.findAllFilms().size());
 
-        storage.removeAll();
+        filmStorage.removeAll();
 
-        assertTrue(storage.findAllFilms().isEmpty());
+        assertTrue(filmStorage.findAllFilms().isEmpty());
     }
 }
