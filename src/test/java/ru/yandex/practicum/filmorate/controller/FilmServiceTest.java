@@ -6,10 +6,16 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.GenreStorage;
+import ru.yandex.practicum.filmorate.dal.RatingStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
-import ru.yandex.practicum.filmorate.dal.impl.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.dal.impl.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
+import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
+import ru.yandex.practicum.filmorate.dal.impl.DbRatingStorage;
+import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -34,11 +40,24 @@ class FilmServiceTest {
 
     private UserStorage userStorage;
 
+    private RatingStorage ratingStorage;
+
+    private GenreStorage genreStorage;
+
+    @Mock
+    private JdbcTemplate template;
+
     @BeforeEach
     void setUp() {
-        userStorage = new InMemoryUserStorage();
-        filmStorage = new InMemoryFilmStorage();
-        service = new FilmService(filmStorage, userStorage);
+        userStorage = new DbUserStorage(template);
+        filmStorage = new DbFilmStorage(template, genreStorage);
+        ratingStorage = new DbRatingStorage(template);
+        genreStorage = new DbGenreStorage(template);
+        service = new FilmService(
+                filmStorage,
+                userStorage,
+                ratingStorage,
+                genreStorage);
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();

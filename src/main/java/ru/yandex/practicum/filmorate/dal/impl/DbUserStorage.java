@@ -8,13 +8,14 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,14 +26,17 @@ public class DbUserStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private final UserRowMapper userRowMapper;
+
     @Autowired
     public DbUserStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userRowMapper = new UserRowMapper();
     }
 
     @Override
-    public Collection<User> findAll() {
-        return jdbcTemplate.query("SELECT * from USERS", new UserRowMapper());
+    public List<User> findAll() {
+        return jdbcTemplate.query("SELECT * from USERS", userRowMapper);
     }
 
     @Override
@@ -89,19 +93,42 @@ public class DbUserStorage implements UserStorage {
         });
 
         try {
-            User user = jdbcTemplate.queryForObject(findUser, new UserRowMapper(), id);
-            if (user != null) user.setFriendshipStatuses(statuses);
+            User user = jdbcTemplate.queryForObject(findUser, userRowMapper, id);
             return Optional.ofNullable(user);
         } catch (Exception e) {
             return Optional.empty();
         }
     }
 
-    @Override
-    public void addFriendship(Integer userId, Integer friendId, boolean confirmed) {
-        String sql = "INSERT INTO friendship_statuses (user_id, friend_id, confirmed) VALUES (?, ?, ?)";
+    public List<User> getFriendsbyUserId(int userId) {
+        if (!this.contains(userId)) {
+            throw new NotFoundException("Can't find friends of non-existing user");
+        }
 
-        jdbcTemplate.update(sql, userId, friendId, confirmed);
+        String friends = "SELECT * FROM users " +
+                "WHERE user_id in (" +
+                "   SELECT friend_id from FRIENDSHIP_STATUSES where user_id = ?" +
+                ");";
+
+        return jdbcTemplate.query(friends, userRowMapper, userId);
+    }
+
+    @Override
+    public List<User> getCommonFriends(int userId, int friendId) {
+        String sql = "SELECT u.* " +
+                "FROM users AS u " +
+                "JOIN friendship_statuses AS fs1 ON u.user_id = fs1.friend_id " +
+                "JOIN friendship_statuses AS fs2 ON u.user_id = fs2.friend_id " +
+                "WHERE fs1.user_id = ? AND fs2.user_id = ?;";
+
+        return jdbcTemplate.query(sql, userRowMapper, userId, friendId);
+    }
+
+    @Override
+    public void addFriendship(Integer userId, Integer friendId) {
+        String sql = "INSERT INTO friendship_statuses (user_id, friend_id) VALUES (?, ?)";
+
+        jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override

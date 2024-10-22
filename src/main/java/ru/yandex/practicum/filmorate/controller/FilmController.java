@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,10 +14,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
+import ru.yandex.practicum.filmorate.controller.mappers.MpaRatingMapper;
 import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.MpaRatingDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -30,33 +34,40 @@ public class FilmController {
 
     private final FilmService service;
 
-    private final FilmMapper mapper;
+    private final FilmMapper filmMapper;
+
+    private final MpaRatingMapper ratingMapper;
 
     @GetMapping
     public List<FilmDto> findAll() {
         List<Film> films = service.getFilms();
-        return films.stream().map(mapper::map).toList();
+        return films.stream().map(film -> filmMapper.map(film,
+                ratingMapper.map(service.findMpaRatingById(film.getMpaId())))).toList();
     }
 
     @PostMapping
-    public ResponseEntity<FilmDto> create(@Valid @RequestBody CreateFilmDto filmDto) {
-        Film toCreate = mapper.map(filmDto);
+    @ResponseStatus(HttpStatus.CREATED)
+    public FilmDto create(@Valid @RequestBody CreateFilmDto filmDto) {
+        Film toCreate = filmMapper.map(filmDto);
         Film createdFilm = service.create(toCreate);
-        FilmDto dto = mapper.map(createdFilm);
-        return new ResponseEntity<>(dto, HttpStatus.CREATED);
+
+        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(createdFilm.getMpaId()));
+        return filmMapper.map(createdFilm, ratingDto);
     }
 
     @PutMapping
     public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
-        Film film = mapper.map(filmDto);
+        Film film = filmMapper.map(filmDto);
         Film updatedFilm = service.updateFilm(film);
-        return mapper.map(updatedFilm);
+        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(updatedFilm.getMpaId()));
+        return filmMapper.map(updatedFilm, ratingDto);
     }
 
     @GetMapping("/{id}")
     public FilmDto getFilm(@PathVariable int id) {
         Film film = service.findFilmById(id);
-        return mapper.map(film);
+        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(film.getMpaId()));
+        return filmMapper.map(film, ratingDto);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -70,8 +81,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    @Validated
+    public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         List<Film> films = service.getMostPopularFilms(count);
-        return films.stream().map(mapper::map).toList();
+        return films.stream().map(film -> filmMapper.map(film,
+                ratingMapper.map(service.findMpaRatingById(film.getMpaId())))).toList();
     }
 }

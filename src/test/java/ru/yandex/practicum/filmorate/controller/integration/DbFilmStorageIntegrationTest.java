@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.dal.GenreStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -35,11 +36,13 @@ class DbFilmStorageIntegrationTest {
 
     private DbFilmStorage storage;
 
+    private GenreStorage genreStorage;
+
     private Film film = null;
 
     @BeforeEach
     void setUp() {
-        storage = new DbFilmStorage(template);
+        storage = new DbFilmStorage(template, genreStorage);
         film = Film.builder()
                 .name("Name")
                 .description("Login")
@@ -89,11 +92,12 @@ class DbFilmStorageIntegrationTest {
         Film addedFilm = storage.add(film);
         DbUserStorage userStorage = new DbUserStorage(template);
 
-        User user = new User();
-        user.setName("Name");
-        user.setLogin("Login");
-        user.setEmail("a@abc.com");
-        user.setBirthday(LocalDate.of(1990, 12, 14));
+        User user = User.builder()
+                .name("Name")
+                .login("Login")
+                .email("a@abc.com")
+                .birthday(LocalDate.of(1990, 12, 14))
+                .build();
         User addedUser = userStorage.add(user);
         storage.addLike(addedFilm.getId(), addedUser.getId());
 

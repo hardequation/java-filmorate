@@ -6,8 +6,10 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
-import ru.yandex.practicum.filmorate.dal.impl.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -28,9 +30,12 @@ class UserServiceTest {
     private UserService service;
     private UserStorage storage;
 
+    @Mock
+    private JdbcTemplate template;
+
     @BeforeEach
     void setUp() {
-        storage = new InMemoryUserStorage();
+        storage = new DbUserStorage(template);
         service = new UserService(storage);
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -43,11 +48,12 @@ class UserServiceTest {
         String name = "Nick Name";
         String email = "mail@mail.ru";
         LocalDate birthday = LocalDate.of(1946, 8, 20);
-        User user = new User();
-        user.setLogin(login);
-        user.setName(name);
-        user.setEmail(email);
-        user.setBirthday(birthday);
+        User user = User.builder()
+                .login(login)
+                .name(name)
+                .email(email)
+                .birthday(birthday)
+                .build();
         User createdUser = service.create(user);
 
         assertNotNull(createdUser.getId(), "User ID should be generated");
@@ -59,10 +65,11 @@ class UserServiceTest {
 
     @Test
     void testCreateUserWithInvalidLogin() {
-        User user = new User();
-        user.setLogin("dolore ullamco"); // login with space
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(1946, 8, 20));
+        User user = User.builder()
+                .login("dolore ullamco") // login with space
+                .email("mail@mail.ru")
+                .birthday(LocalDate.of(1946, 8, 20))
+                .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
@@ -73,10 +80,11 @@ class UserServiceTest {
 
     @Test
     void testCreateUserWithoutLogin() {
-        User user = new User();
-        user.setName("dolore ullamco");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(1946, 8, 20));
+        User user = User.builder()
+                .name("dolore ullamco")
+                .email("mail@mail.ru")
+                .birthday(LocalDate.of(1946, 8, 20))
+                .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
@@ -87,11 +95,12 @@ class UserServiceTest {
 
     @Test
     void testCreateUserWithWrongEmail() {
-        User user = new User();
-        user.setLogin("doloreullamco");
-        user.setName("");
-        user.setEmail("mail.ru");
-        user.setBirthday(LocalDate.of(1946, 8, 20));
+        User user = User.builder()
+                .login("doloreullamco")
+                .name("")
+                .email("mail.ru")
+                .birthday(LocalDate.of(1946, 8, 20))
+                .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
@@ -102,11 +111,12 @@ class UserServiceTest {
 
     @Test
     void testCreateUserWithFutureBirthday() {
-        User user = new User();
-        user.setLogin("dolore");
-        user.setName("");
-        user.setEmail("test@mail.ru");
-        user.setBirthday(LocalDate.now().plusDays(1)); // future date
+        User user = User.builder()
+                .login("dolore")
+                .name("")
+                .email("test@mail.ru")
+                .birthday(LocalDate.now().plusDays(1))
+                .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
@@ -117,10 +127,11 @@ class UserServiceTest {
 
     @Test
     void testCreateUserWithoutName() {
-        User user = new User();
-        user.setLogin("dolore");
-        user.setEmail("test@mail.ru");
-        user.setBirthday(LocalDate.of(1946, 8, 20));
+        User user = User.builder()
+                .login("dolore")
+                .email("test@mail.ru")
+                .birthday(LocalDate.of(1946, 8, 20))
+                .build();
 
         User createdUser = service.create(user);
         assertEquals("dolore", createdUser.getName());
@@ -128,18 +139,20 @@ class UserServiceTest {
 
     @Test
     void testUpdateUserSuccess() {
-        User user = new User();
-        user.setLogin("testlogin");
-        user.setName("Test Name");
-        user.setEmail("test@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
+        User user = User.builder()
+                .login("testlogin")
+                .name("Test Name")
+                .email("test@example.com")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
         service.create(user);
 
-        User updatedUser = new User();
-        updatedUser.setId(user.getId());
-        updatedUser.setLogin("newlogin");
-        updatedUser.setName("New Name");
-        updatedUser.setEmail("new@example.com");
+        User updatedUser = User.builder()
+                .id(user.getId())
+                .login("newlogin")
+                .name("New Name")
+                .email("new@example.com")
+                .build();
         updatedUser.setBirthday(LocalDate.of(1994, 1, 1));
 
         User result = service.updateUser(updatedUser);
@@ -152,12 +165,13 @@ class UserServiceTest {
 
     @Test
     void testUpdateUserNotFound() {
-        User updatedUser = new User();
-        updatedUser.setId(999); // Non-existent ID
-        updatedUser.setLogin("newlogin");
-        updatedUser.setName("New Name");
-        updatedUser.setEmail("new@example.com");
-        updatedUser.setBirthday(LocalDate.of(1990, 1, 1));
+        User updatedUser = User.builder()
+                .id(999) // Non-existent ID
+                .login("newlogin")
+                .name("New Name")
+                .email("new@example.com")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> service.updateUser(updatedUser));
 
@@ -166,18 +180,20 @@ class UserServiceTest {
 
     @Test
     void testFindAllUsers() {
-        User user1 = new User();
-        user1.setLogin("testlogin1");
-        user1.setName("Test Name 1");
-        user1.setEmail("test1@example.com");
-        user1.setBirthday(LocalDate.of(1990, 1, 1));
+        User user1 = User.builder()
+                .login("testlogin1")
+                .name("Test Name 1")
+                .email("test1@example.com")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
         service.create(user1);
 
-        User user2 = new User();
-        user2.setLogin("testlogin2");
-        user2.setName("Test Name 2");
-        user2.setEmail("test2@example.com");
-        user2.setBirthday(LocalDate.of(1995, 5, 5));
+        User user2 = User.builder()
+                .login("testlogin2")
+                .name("Test Name 2")
+                .email("test2@example.com")
+                .birthday(LocalDate.of(1995, 5, 5))
+                .build();
         service.create(user2);
 
         Collection<User> users = service.getUsers();

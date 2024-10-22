@@ -6,12 +6,11 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.validators.AfterDate;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -22,11 +21,14 @@ public class FilmDto {
     @NotBlank(message = "Film name can't be blank")
     private String name;
 
+    private Set<Integer> likedUsersID;
+
     @NotBlank
     @Size(max = 200, message = "Description is too long")
     private String description;
 
-    private MpaRating mpa;
+    @NotNull
+    private MpaRatingDto mpa;
 
     @NotNull
     @AfterDate(value = "1895-12-28", message = "Release date should after 1st film birthday")
@@ -35,5 +37,5 @@ public class FilmDto {
     @Positive(message = "Film duration should be positive")
     private long duration;
 
-    private List<Genre> genres;
+    private LinkedHashSet<GenreDto> genres;
 }

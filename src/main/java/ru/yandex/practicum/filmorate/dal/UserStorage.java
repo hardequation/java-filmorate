@@ -2,12 +2,12 @@ package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserStorage {
 
-    Collection<User> findAll();
+    List<User> findAll();
 
     User add(User user);
 
@@ -17,7 +17,11 @@ public interface UserStorage {
 
     Optional<User> findById(int id);
 
-    void addFriendship(Integer userId, Integer friendId, boolean confirmed);
+    List<User> getFriendsbyUserId(int userId);
+
+    List<User> getCommonFriends(int userId, int friendId);
+
+    void addFriendship(Integer userId, Integer friendId);
 
     void removeFriendship(Integer userId, Integer friendId);
 

@@ -37,11 +37,12 @@ class DbUserStorageIntegrationTest {
     @BeforeEach
     void setUp() {
         storage = new DbUserStorage(template);
-        user = new User();
-        user.setName("Name");
-        user.setLogin("Login");
-        user.setEmail("a@abc.com");
-        user.setBirthday(LocalDate.of(1980, 10, 1));
+        user = User.builder()
+                .name("Name")
+                .login("Login")
+                .email("a@abc.com")
+                .birthday(LocalDate.of(1980, 10, 1))
+                .build();
     }
 
     @AfterEach

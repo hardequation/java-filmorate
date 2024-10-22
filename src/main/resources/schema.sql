@@ -26,10 +26,12 @@ CREATE TABLE IF NOT EXISTS users (
     birthday DATE NOT NULL
 );
 
+CREATE UNIQUE index IF NOT EXISTS USER_EMAIL_UINDEX ON USERS (email);
+CREATE UNIQUE index IF NOT EXISTS USER_LOGIN_UINDEX ON USERS (login);
+
 CREATE TABLE IF NOT EXISTS friendship_statuses (
     user_id INTEGER NOT NULL,
     friend_id INTEGER NOT NULL,
-    confirmed BOOLEAN NOT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (user_id),
     CONSTRAINT fk_friend_id FOREIGN KEY (friend_id) REFERENCES users (user_id),
     PRIMARY KEY (user_id, friend_id)
