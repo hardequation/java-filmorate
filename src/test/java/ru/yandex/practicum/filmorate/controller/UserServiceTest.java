@@ -6,10 +6,12 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
+import ru.yandex.practicum.filmorate.dto.CreateUserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -25,12 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
+@JdbcTest
 class UserServiceTest {
     private Validator validator;
     private UserService service;
     private UserStorage storage;
 
-    @Mock
+    @Autowired
     private JdbcTemplate template;
 
     @BeforeEach
@@ -65,63 +68,59 @@ class UserServiceTest {
 
     @Test
     void testCreateUserWithInvalidLogin() {
-        User user = User.builder()
-                .login("dolore ullamco") // login with space
-                .email("mail@mail.ru")
-                .birthday(LocalDate.of(1946, 8, 20))
-                .build();
+        CreateUserDto user = new CreateUserDto();
+        user.setLogin("dolore ullamco");
+        user.setEmail("mail@mail.ru");
+        user.setBirthday(LocalDate.of(1946, 8, 20));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<CreateUserDto>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateUserDto> exception = violations.stream().findFirst().get();
         assertEquals("The field must not contain spaces", exception.getMessage());
     }
 
     @Test
     void testCreateUserWithoutLogin() {
-        User user = User.builder()
-                .name("dolore ullamco")
-                .email("mail@mail.ru")
-                .birthday(LocalDate.of(1946, 8, 20))
-                .build();
+        CreateUserDto user = new CreateUserDto();
+        user.setName("dolore ullamco");
+        user.setEmail("mail@mail.ru");
+        user.setBirthday(LocalDate.of(1946, 8, 20));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<CreateUserDto>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateUserDto> exception = violations.stream().findFirst().get();
         assertEquals("Login can't be empty", exception.getMessage());
     }
 
     @Test
     void testCreateUserWithWrongEmail() {
-        User user = User.builder()
-                .login("doloreullamco")
-                .name("")
-                .email("mail.ru")
-                .birthday(LocalDate.of(1946, 8, 20))
-                .build();
+        CreateUserDto user = new CreateUserDto();
+        user.setLogin("doloreullamco");
+        user.setName("");
+        user.setEmail("mail.ru");
+        user.setBirthday(LocalDate.of(1946, 8, 20));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<CreateUserDto>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateUserDto> exception = violations.stream().findFirst().get();
         assertEquals("Email is not valid", exception.getMessage());
     }
 
     @Test
     void testCreateUserWithFutureBirthday() {
-        User user = User.builder()
-                .login("dolore")
-                .name("")
-                .email("test@mail.ru")
-                .birthday(LocalDate.now().plusDays(1))
-                .build();
+        CreateUserDto user = new CreateUserDto();
+        user.setLogin("dolore");
+        user.setName("");
+        user.setEmail("test@mail.ru");
+        user.setBirthday(LocalDate.now().plusDays(1));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<CreateUserDto>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
 
-        ConstraintViolation<User> exception = violations.stream().findFirst().get();
+        ConstraintViolation<CreateUserDto> exception = violations.stream().findFirst().get();
         assertEquals("Birthday can't be in the future", exception.getMessage());
     }
 
