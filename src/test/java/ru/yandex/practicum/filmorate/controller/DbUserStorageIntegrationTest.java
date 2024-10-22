@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controller.integration;
+package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
