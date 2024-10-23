@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.validators.AfterDate;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 @Data
 @Builder
@@ -20,8 +19,6 @@ public class FilmDto {
 
     @NotBlank(message = "Film name can't be blank")
     private String name;
-
-    private Set<Integer> likedUsersID;
 
     @NotBlank
     @Size(max = 200, message = "Description is too long")

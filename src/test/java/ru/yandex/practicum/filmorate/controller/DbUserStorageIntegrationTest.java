@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
+import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
-@Import({DbUserStorage.class})
+@Import({DbUserStorage.class, UserRowMapper.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DbUserStorageIntegrationTest {
@@ -35,7 +36,8 @@ class DbUserStorageIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        storage = new DbUserStorage(template);
+        UserRowMapper userRowMapper = new UserRowMapper();
+        storage = new DbUserStorage(template, userRowMapper);
         user = User.builder()
                 .name("Name")
                 .login("Login")

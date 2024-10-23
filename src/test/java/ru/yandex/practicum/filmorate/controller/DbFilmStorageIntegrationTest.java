@@ -15,7 +15,12 @@ import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbRatingStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
+import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
+import ru.yandex.practicum.filmorate.dal.mappers.RatingRowMapper;
+import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -29,7 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
-@Import({DbFilmStorage.class, DbGenreStorage.class, DbRatingStorage.class})
+@Import({DbFilmStorage.class, DbGenreStorage.class, DbRatingStorage.class,
+        FilmRowMapper.class, GenreRowMapper.class, RatingRowMapper.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DbFilmStorageIntegrationTest {
@@ -47,15 +53,17 @@ class DbFilmStorageIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        genreStorage = new DbGenreStorage(template);
-        ratingStorage = new DbRatingStorage(template);
-        filmStorage = new DbFilmStorage(template, genreStorage, ratingStorage);
+        RatingRowMapper ratingRowMapper = new RatingRowMapper();
+        GenreRowMapper genreRowMapper = new GenreRowMapper();
+        FilmRowMapper filmRowMapper = new FilmRowMapper();
+        ratingStorage = new DbRatingStorage(template, ratingRowMapper);
+        filmStorage = new DbFilmStorage(template, genreRowMapper, filmRowMapper);
 
         film = Film.builder()
                 .name("Name")
                 .description("Login")
                 .duration(150L)
-                .mpaId(2)
+                .mpa(MpaRating.builder().id(2).build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
                 .build();
@@ -97,8 +105,9 @@ class DbFilmStorageIntegrationTest {
 
     @Test
     void testLikes() {
+        UserRowMapper userRowMapper = new UserRowMapper();
         Film addedFilm = filmStorage.add(film);
-        DbUserStorage userStorage = new DbUserStorage(template);
+        DbUserStorage userStorage = new DbUserStorage(template, userRowMapper);
 
         User user = User.builder()
                 .name("Name")

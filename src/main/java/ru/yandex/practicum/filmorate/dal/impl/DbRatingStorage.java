@@ -19,9 +19,9 @@ public class DbRatingStorage implements RatingStorage {
     private final RatingRowMapper ratingRowMapper;
 
     @Autowired
-    public DbRatingStorage(JdbcTemplate jdbcTemplate) {
+    public DbRatingStorage(JdbcTemplate jdbcTemplate, RatingRowMapper ratingRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
-        this.ratingRowMapper = new RatingRowMapper();
+        this.ratingRowMapper = ratingRowMapper;
     }
 
     @Override

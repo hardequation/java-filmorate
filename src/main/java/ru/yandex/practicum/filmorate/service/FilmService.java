@@ -68,9 +68,6 @@ public class FilmService {
     }
 
     public Film updateFilm(Film newFilm) {
-        if (!filmStorage.containsFilm(newFilm.getId())) {
-            throw new NotFoundException(FILM_NOT_FOUND + newFilm.getId());
-        }
         return filmStorage.update(newFilm);
     }
 
@@ -79,9 +76,10 @@ public class FilmService {
             throw new NotFoundException(USER_NOT_FOUND + userId);
         }
 
-        Film film = filmStorage.findFilmById(filmId)
-                .orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + filmId));
-        filmStorage.update(film);
+        if (!filmStorage.containsFilm(filmId)) {
+            throw new NotFoundException(FILM_NOT_FOUND + filmId);
+        }
+
         filmStorage.addLike(filmId, userId);
     }
 
@@ -90,10 +88,10 @@ public class FilmService {
             throw new NotFoundException(USER_NOT_FOUND + userId);
         }
 
-        Film film = filmStorage.findFilmById(filmId)
-                .orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + filmId));
+        if (!filmStorage.containsFilm(filmId)) {
+            throw new NotFoundException(FILM_NOT_FOUND + filmId);
+        }
 
-        filmStorage.update(film);
         filmStorage.removeLike(filmId, userId);
     }
 

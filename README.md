@@ -12,9 +12,9 @@ https://dbdiagram.io/d/66fc3f3bfb079c7ebd0086cb
 ## Main queries based on data structure FROM diagram
 
 ```sql
--- friendship status for 2 users
+-- friendship of users
 SELECT * 
-FROM friendship_statuses 
+FROM friendship 
 WHERE (user_id = <id1> AND friend_id = <id2>)
     OR (user_id = <id2> AND friend_id = <id1>)
 

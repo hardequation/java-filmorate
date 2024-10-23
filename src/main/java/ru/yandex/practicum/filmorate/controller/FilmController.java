@@ -27,6 +27,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
@@ -42,7 +43,7 @@ public class FilmController {
     public List<FilmDto> findAll() {
         List<Film> films = service.getFilms();
         return films.stream().map(film -> filmMapper.map(film,
-                ratingMapper.map(service.findMpaRatingById(film.getMpaId())))).toList();
+                ratingMapper.map(service.findMpaRatingById(film.getMpa().getId())))).toList();
     }
 
     @PostMapping
@@ -51,7 +52,7 @@ public class FilmController {
         Film toCreate = filmMapper.map(filmDto);
         Film createdFilm = service.create(toCreate);
 
-        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(createdFilm.getMpaId()));
+        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(createdFilm.getMpa().getId()));
         return filmMapper.map(createdFilm, ratingDto);
     }
 
@@ -59,14 +60,14 @@ public class FilmController {
     public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
         Film film = filmMapper.map(filmDto);
         Film updatedFilm = service.updateFilm(film);
-        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(updatedFilm.getMpaId()));
+        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(updatedFilm.getMpa().getId()));
         return filmMapper.map(updatedFilm, ratingDto);
     }
 
     @GetMapping("/{id}")
     public FilmDto getFilm(@PathVariable int id) {
         Film film = service.findFilmById(id);
-        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(film.getMpaId()));
+        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(film.getMpa().getId()));
         return filmMapper.map(film, ratingDto);
     }
 
@@ -81,10 +82,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    @Validated
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         List<Film> films = service.getMostPopularFilms(count);
         return films.stream().map(film -> filmMapper.map(film,
-                ratingMapper.map(service.findMpaRatingById(film.getMpaId())))).toList();
+                ratingMapper.map(service.findMpaRatingById(film.getMpa().getId())))).toList();
     }
 }

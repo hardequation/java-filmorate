@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 @Data
 @RequiredArgsConstructor
@@ -28,6 +27,4 @@ public class CreateUserDto {
     @NotNull
     @PastOrPresent(message = "Birthday can't be in the future")
     private LocalDate birthday;
-
-    private Map<Integer, Boolean> friendshipStatuses;
 }

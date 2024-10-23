@@ -20,7 +20,7 @@ public class Film {
 
     private String description;
 
-    private Integer mpaId;
+    private MpaRating mpa;
 
     private LocalDate releaseDate;
 

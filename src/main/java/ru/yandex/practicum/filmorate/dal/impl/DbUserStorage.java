@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
+
 @Repository
 @Qualifier("dbUserStorage")
 public class DbUserStorage implements UserStorage {
@@ -27,9 +29,9 @@ public class DbUserStorage implements UserStorage {
     private final UserRowMapper userRowMapper;
 
     @Autowired
-    public DbUserStorage(JdbcTemplate jdbcTemplate) {
+    public DbUserStorage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
-        this.userRowMapper = new UserRowMapper();
+        this.userRowMapper = userRowMapper;
     }
 
     @Override
@@ -63,13 +65,16 @@ public class DbUserStorage implements UserStorage {
                 "name = ?, login = ?, email = ?, birthday = ? " +
                 "WHERE user_id = ?";
 
-        jdbcTemplate.update(sql,
+        int rowsAffected = jdbcTemplate.update(sql,
                 user.getName(),
                 user.getLogin(),
                 user.getEmail(),
                 Date.valueOf(user.getBirthday()),
                 user.getId());
 
+        if (rowsAffected == 0) {
+            throw new NotFoundException(USER_NOT_FOUND + user.getId());
+        }
         return user;
     }
 
@@ -97,9 +102,7 @@ public class DbUserStorage implements UserStorage {
         }
 
         String friends = "SELECT * FROM users " +
-                "WHERE user_id in (" +
-                "   SELECT friend_id from FRIENDSHIP_STATUSES where user_id = ?" +
-                ");";
+                "WHERE user_id IN (SELECT friend_id from FRIENDSHIP where user_id = ?);";
 
         return jdbcTemplate.query(friends, userRowMapper, userId);
     }
@@ -108,8 +111,8 @@ public class DbUserStorage implements UserStorage {
     public List<User> getCommonFriends(int userId, int friendId) {
         String sql = "SELECT u.* " +
                 "FROM users AS u " +
-                "JOIN friendship_statuses AS fs1 ON u.user_id = fs1.friend_id " +
-                "JOIN friendship_statuses AS fs2 ON u.user_id = fs2.friend_id " +
+                "JOIN friendship AS fs1 ON u.user_id = fs1.friend_id " +
+                "JOIN friendship AS fs2 ON u.user_id = fs2.friend_id " +
                 "WHERE fs1.user_id = ? AND fs2.user_id = ?;";
 
         return jdbcTemplate.query(sql, userRowMapper, userId, friendId);
@@ -117,17 +120,16 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public void addFriendship(Integer userId, Integer friendId) {
-        String sql = "INSERT INTO friendship_statuses (user_id, friend_id) VALUES (?, ?)";
+        String sql = "INSERT INTO friendship (user_id, friend_id) VALUES (?, ?)";
 
         jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
     public void removeFriendship(Integer userId, Integer friendId) {
-        String sql = "DELETE FROM friendship_statuses WHERE user_id = ? AND friend_id = ?";
+        String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
 
         jdbcTemplate.update(sql, userId, friendId);
-        jdbcTemplate.update(sql, friendId, userId);
     }
 
     @Override

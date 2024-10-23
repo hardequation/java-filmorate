@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller.mappers;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -8,7 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class GenreMapper {
 
     public GenreDto map(Genre genre) {

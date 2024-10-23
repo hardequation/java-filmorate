@@ -22,7 +22,7 @@ public class CreateFilmDto {
     @Size(max = 200, message = "Description is too long")
     private String description;
 
-    //    @NotNull
+    @NotNull
     private MpaRatingDto mpa;
 
     @NotNull

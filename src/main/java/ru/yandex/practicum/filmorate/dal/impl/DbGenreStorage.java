@@ -24,9 +24,9 @@ public class DbGenreStorage implements GenreStorage {
     private final GenreRowMapper genreRowMapper;
 
     @Autowired
-    public DbGenreStorage(JdbcTemplate jdbcTemplate) {
+    public DbGenreStorage(JdbcTemplate jdbcTemplate, GenreRowMapper genreRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
-        this.genreRowMapper = new GenreRowMapper();
+        this.genreRowMapper = genreRowMapper;
     }
 
     @Override
