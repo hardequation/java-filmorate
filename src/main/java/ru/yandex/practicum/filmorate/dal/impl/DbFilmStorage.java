@@ -58,8 +58,8 @@ public class DbFilmStorage implements FilmStorage {
                         "r.rating_id rating_id, " +
                         "r.rating_name rating " +
                         "FROM films f " +
-                        "INNER JOIN ratings r ON f.mpa_rating_id = r.rating_id; "
-                , filmRowMapper);
+                        "INNER JOIN ratings r ON f.mpa_rating_id = r.rating_id; ",
+                filmRowMapper);
     }
 
     @Override
