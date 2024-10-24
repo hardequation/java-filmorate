@@ -45,19 +45,12 @@ class DbFilmStorageIntegrationTest {
 
     private DbFilmStorage filmStorage;
 
-    private GenreStorage genreStorage;
-
-    private RatingStorage ratingStorage;
-
     private Film film = null;
 
     @BeforeEach
     void setUp() {
-        RatingRowMapper ratingRowMapper = new RatingRowMapper();
-        GenreRowMapper genreRowMapper = new GenreRowMapper();
         FilmRowMapper filmRowMapper = new FilmRowMapper();
-        ratingStorage = new DbRatingStorage(template, ratingRowMapper);
-        filmStorage = new DbFilmStorage(template, genreRowMapper, filmRowMapper);
+        filmStorage = new DbFilmStorage(template, filmRowMapper);
 
         film = Film.builder()
                 .name("Name")
