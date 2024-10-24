@@ -1,8 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,56 +14,73 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
+import ru.yandex.practicum.filmorate.controller.mappers.MpaRatingMapper;
+import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Collection;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
+
     private final FilmService service;
 
-    @Autowired
-    public FilmController(FilmService service) {
-        this.service = service;
-    }
+    private final FilmMapper filmMapper;
+
+    private final MpaRatingMapper ratingMapper;
 
     @GetMapping
-    public Collection<Film> findAll() {
-        return service.getFilms();
+    public List<FilmDto> findAll() {
+        List<Film> films = service.getFilms();
+        return films.stream().map(filmMapper::map).toList();
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
-        return service.create(film);
+    @ResponseStatus(HttpStatus.CREATED)
+    public FilmDto create(@Valid @RequestBody CreateFilmDto filmDto) {
+        Film toCreate = filmMapper.map(filmDto);
+        Film createdFilm = service.create(toCreate);
+        service.addGenresForFilm(createdFilm);
+        createdFilm.setGenres(toCreate.getGenres());
+        return filmMapper.map(createdFilm);
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film newFilm) {
-        return service.updateFilm(newFilm);
+    public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
+        Film film = filmMapper.map(filmDto);
+        Film updatedFilm = service.updateFilm(film);
+        return filmMapper.map(updatedFilm);
     }
 
     @GetMapping("/{id}")
-    public Film getFilm(@PathVariable long id) {
-        return service.getFilm(id);
+    public FilmDto getFilm(@PathVariable int id) {
+        Film film = service.findFilmById(id);
+        film.setGenres(service.findGenresForFilm(id));
+        return filmMapper.map(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void likeFilm(@PathVariable Long id, @PathVariable Long userId) {
+    public void likeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
         service.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void unlikeFilm(@PathVariable Long id, @PathVariable Long userId) {
+    public void unlikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
         service.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        return service.getMostPopularFilms(count);
+    public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
+        List<Film> films = service.getMostPopularFilms(count);
+        return films.stream().map(filmMapper::map).toList();
     }
 }
