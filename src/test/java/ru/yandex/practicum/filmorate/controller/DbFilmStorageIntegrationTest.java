@@ -9,8 +9,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dal.GenreStorage;
-import ru.yandex.practicum.filmorate.dal.RatingStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbRatingStorage;
