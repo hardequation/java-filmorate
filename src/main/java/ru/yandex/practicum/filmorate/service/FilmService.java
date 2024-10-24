@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
@@ -63,11 +64,20 @@ public class FilmService {
         return ratingStorage.findMpaRatingById(id).orElseThrow(() -> new NotFoundException(GENRE_NOT_FOUND + id));
     }
 
+    public LinkedHashSet<Genre> findGenresForFilm(int id) {
+        return new LinkedHashSet<>(genreStorage.findGenresForFilm(id));
+    }
+
+    public void addGenresForFilm(Film film) {
+        genreStorage.addGenresOfFilm(film);
+    }
+
     public Film create(Film film) {
         return filmStorage.add(film);
     }
 
     public Film updateFilm(Film newFilm) {
+        genreStorage.addGenresOfFilm(newFilm);
         return filmStorage.update(newFilm);
     }
 

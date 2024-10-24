@@ -3,25 +3,20 @@ package ru.yandex.practicum.filmorate.dal.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,14 +31,10 @@ public class DbFilmStorage implements FilmStorage {
 
     private final FilmRowMapper filmRowMapper;
 
-    private final GenreRowMapper genreRowMapper;
-
     @Autowired
     public DbFilmStorage(JdbcTemplate jdbcTemplate,
-                         GenreRowMapper genreRowMapper,
                          FilmRowMapper filmRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
-        this.genreRowMapper = genreRowMapper;
         this.filmRowMapper = filmRowMapper;
     }
 
@@ -66,7 +57,6 @@ public class DbFilmStorage implements FilmStorage {
     public Film add(Film film) {
         String addFilmsql = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
-        String addFilmGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
@@ -84,31 +74,8 @@ public class DbFilmStorage implements FilmStorage {
             throw new ValidationException("Rating with id " + film.getMpa().getId() + " isn't found");
         }
 
-        Integer generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
         film.setId(generatedId);
-
-        List<Genre> genres = film.getGenres().stream().toList();
-        if (genres.isEmpty()) {
-            return film;
-        }
-
-        Integer filmId = film.getId();
-        try {
-            jdbcTemplate.batchUpdate(addFilmGenre,
-                    new BatchPreparedStatementSetter() {
-                        public void setValues(PreparedStatement ps, int i) throws SQLException {
-                            ps.setInt(1, filmId);
-                            ps.setInt(2, genres.get(i).getId());
-                        }
-
-                        public int getBatchSize() {
-                            return genres.size();
-                        }
-
-                    });
-        } catch (DataIntegrityViolationException e) {
-            throw new ValidationException("Genres of films should present in genres table");
-        }
 
         return film;
     }
@@ -163,15 +130,6 @@ public class DbFilmStorage implements FilmStorage {
         if (film == null) {
             return Optional.empty();
         }
-
-        String genres = "SELECT g.genre_id genre_id, g.genre genre " +
-                "FROM films_genres fg " +
-                "INNER JOIN genres g " +
-                "ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id = ?";
-
-        List<Genre> genresList = jdbcTemplate.query(genres, genreRowMapper, film.getId());
-        film.setGenres(new LinkedHashSet<>(genresList));
 
         return Optional.of(film);
     }

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.dto.MpaRatingDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Component
@@ -38,12 +37,12 @@ public class FilmMapper {
                 .build();
     }
 
-    public FilmDto map(Film film, MpaRatingDto ratingDto) {
+    public FilmDto map(Film film) {
         return FilmDto.builder()
                 .id(film.getId())
                 .name(film.getName())
                 .description(film.getDescription())
-                .mpa(ratingDto)
+                .mpa(ratingMapper.map(film.getMpa()))
                 .releaseDate(film.getReleaseDate())
                 .duration(film.getDuration())
                 .genres(genreMapper.mapToGenreDtoList(film.getGenres()))

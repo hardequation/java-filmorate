@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
 import ru.yandex.practicum.filmorate.controller.mappers.MpaRatingMapper;
 import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.dto.MpaRatingDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -42,8 +41,7 @@ public class FilmController {
     @GetMapping
     public List<FilmDto> findAll() {
         List<Film> films = service.getFilms();
-        return films.stream().map(film -> filmMapper.map(film,
-                ratingMapper.map(service.findMpaRatingById(film.getMpa().getId())))).toList();
+        return films.stream().map(filmMapper::map).toList();
     }
 
     @PostMapping
@@ -51,24 +49,23 @@ public class FilmController {
     public FilmDto create(@Valid @RequestBody CreateFilmDto filmDto) {
         Film toCreate = filmMapper.map(filmDto);
         Film createdFilm = service.create(toCreate);
-
-        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(createdFilm.getMpa().getId()));
-        return filmMapper.map(createdFilm, ratingDto);
+        service.addGenresForFilm(createdFilm);
+        createdFilm.setGenres(toCreate.getGenres());
+        return filmMapper.map(createdFilm);
     }
 
     @PutMapping
     public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
         Film film = filmMapper.map(filmDto);
         Film updatedFilm = service.updateFilm(film);
-        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(updatedFilm.getMpa().getId()));
-        return filmMapper.map(updatedFilm, ratingDto);
+        return filmMapper.map(updatedFilm);
     }
 
     @GetMapping("/{id}")
     public FilmDto getFilm(@PathVariable int id) {
         Film film = service.findFilmById(id);
-        MpaRatingDto ratingDto = ratingMapper.map(service.findMpaRatingById(film.getMpa().getId()));
-        return filmMapper.map(film, ratingDto);
+        film.setGenres(service.findGenresForFilm(id));
+        return filmMapper.map(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -84,7 +81,6 @@ public class FilmController {
     @GetMapping("/popular")
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         List<Film> films = service.getMostPopularFilms(count);
-        return films.stream().map(film -> filmMapper.map(film,
-                ratingMapper.map(service.findMpaRatingById(film.getMpa().getId())))).toList();
+        return films.stream().map(filmMapper::map).toList();
     }
 }
