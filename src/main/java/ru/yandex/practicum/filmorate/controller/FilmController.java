@@ -54,6 +54,11 @@ public class FilmController {
         return filmMapper.map(createdFilm);
     }
 
+    @DeleteMapping("/films/{filmId}")
+    public void removeFilm(@PathVariable Integer filmId) {
+        service.removeFilm(filmId);
+    }
+
     @PutMapping
     public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
         Film film = filmMapper.map(filmDto);

@@ -49,6 +49,11 @@ public class UserController {
         return mapper.map(createdFilm);
     }
 
+    @DeleteMapping("/users/{userId}")
+    public void removeUser(@PathVariable Integer userId) {
+        service.removeUser(userId);
+    }
+
     @PutMapping
     public UserDto updateUser(@Valid @RequestBody UserDto userDto) {
         User user = mapper.map(userDto);

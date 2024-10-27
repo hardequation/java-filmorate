@@ -40,7 +40,7 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public User add(User user) {
+    public User create(User user) {
         String sql = "INSERT INTO users (name, login, email, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -57,6 +57,12 @@ public class DbUserStorage implements UserStorage {
         user.setId(generatedId);
 
         return user;
+    }
+
+    @Override
+    public void removeUser(Integer id) {
+        String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
+        jdbcTemplate.update(deleteUserSql, id);
     }
 
     @Override
@@ -88,12 +94,11 @@ public class DbUserStorage implements UserStorage {
     @Override
     public Optional<User> findById(int id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
-        try {
-            User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
-            return Optional.ofNullable(user);
-        } catch (Exception e) {
+        User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
+        if (user == null) {
             return Optional.empty();
         }
+        return Optional.of(user);
     }
 
     public List<User> getFriendsbyUserId(int userId) {

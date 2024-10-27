@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
@@ -55,15 +57,26 @@ class DbUserStorageIntegrationTest {
     void testAddUser() {
         assertTrue(storage.findAll().isEmpty());
 
-        User addedUser = storage.add(user);
+        User addedUser = storage.create(user);
 
         assertEquals(1, storage.findAll().size());
         assertEquals(user.getName(), addedUser.getName());
     }
 
     @Test
+    void testRemoveUser() {
+        User addedUser = storage.create(user);
+        int id = addedUser.getId();
+        assertFalse(storage.findById(id).isEmpty());
+
+        storage.removeUser(id);
+
+        assertThrows(EmptyResultDataAccessException.class, () -> storage.findById(id).isEmpty());
+    }
+
+    @Test
     void testUpdateUser() {
-        storage.add(user);
+        storage.create(user);
 
         String newName = "NewName";
         user.setName(newName);
@@ -74,7 +87,7 @@ class DbUserStorageIntegrationTest {
 
     @Test
     void testContains() {
-        User addedUser = storage.add(user);
+        User addedUser = storage.create(user);
 
         assertTrue(storage.contains(addedUser.getId()));
         assertFalse(storage.contains(addedUser.getId() + 1));
@@ -82,7 +95,7 @@ class DbUserStorageIntegrationTest {
 
     @Test
     void testFindUserById() {
-        User addedUser = storage.add(user);
+        User addedUser = storage.create(user);
 
         Optional<User> userOptional = storage.findById(addedUser.getId());
 
@@ -95,7 +108,7 @@ class DbUserStorageIntegrationTest {
 
     @Test
     void testRemoveAll() {
-        storage.add(user);
+        storage.create(user);
         assertEquals(1, storage.findAll().size());
 
         storage.removeAll();

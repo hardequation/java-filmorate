@@ -76,6 +76,10 @@ public class FilmService {
         return filmStorage.add(film);
     }
 
+    public void removeFilm(Integer id) {
+        filmStorage.removeFilm(id);
+    }
+
     public Film updateFilm(Film newFilm) {
         genreStorage.addGenresOfFilm(newFilm);
         return filmStorage.update(newFilm);
