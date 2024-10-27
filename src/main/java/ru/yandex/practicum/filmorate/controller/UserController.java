@@ -49,7 +49,7 @@ public class UserController {
         return mapper.map(createdFilm);
     }
 
-    @DeleteMapping("/users/{userId}")
+    @DeleteMapping("/{userId}")
     public void removeUser(@PathVariable Integer userId) {
         service.removeUser(userId);
     }
