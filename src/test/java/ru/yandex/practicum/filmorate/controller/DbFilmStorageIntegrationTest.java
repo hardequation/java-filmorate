@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
@@ -31,7 +30,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -91,7 +89,7 @@ class DbFilmStorageIntegrationTest {
 
         filmStorage.removeFilm(id);
 
-        assertThrows(EmptyResultDataAccessException.class, () -> filmStorage.findFilmById(id));
+        assertEquals(Optional.empty(), filmStorage.findFilmById(id));
     }
 
     @Test

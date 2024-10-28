@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
@@ -20,7 +19,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
@@ -71,7 +69,7 @@ class DbUserStorageIntegrationTest {
 
         storage.removeUser(id);
 
-        assertThrows(EmptyResultDataAccessException.class, () -> storage.findById(id).isEmpty());
+        assertEquals(Optional.empty(),  storage.findById(id));
     }
 
     @Test
