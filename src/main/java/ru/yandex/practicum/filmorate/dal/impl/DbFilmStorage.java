@@ -157,15 +157,11 @@ public class DbFilmStorage implements FilmStorage {
                 "f.release_date AS release_date, " +
                 "f.duration AS duration, " +
                 "r.rating_id AS rating_id, " +
-                "r.rating_name AS rating_name, " +
-                "g.genre_id AS genre_id, " +
-                "g.genre AS genre_name " +
+                "r.rating_name AS rating_name " +
                 "FROM films AS f " +
                 "JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
-                "JOIN films_genres fg ON f.film_id = fg.film_id " +
-                "JOIN genres g ON fg.genre_id = g.genre_id " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name, g.genre_id, g.genre " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
                 "ORDER BY COUNT(fl.liked_user_id) DESC " +
                 "LIMIT ?";
 

@@ -86,6 +86,8 @@ public class FilmController {
     @GetMapping("/popular")
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         List<Film> films = service.getMostPopularFilms(count);
-        return films.stream().map(filmMapper::map).toList();
+        return films.stream()
+                .map(filmMapper::map)
+                .toList();
     }
 }
