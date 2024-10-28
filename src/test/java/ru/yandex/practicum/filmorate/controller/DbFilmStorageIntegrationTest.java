@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -220,5 +221,22 @@ class DbFilmStorageIntegrationTest {
         List<Film> popularFilmsAfterRemove = filmStorage.getMostPopularFilms(1);
         assertEquals(1, popularFilmsAfterRemove.size());
         assertEquals(film2, popularFilmsAfterRemove.get(0));
+    }
+
+    @Test
+    @DisplayName("Film without likes can be popular also")
+    void testPopularFilmsAfterRemoveWithoutLikes() {
+        filmStorage.add(Film.builder()
+                .name("Name1")
+                .description("Login1")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .build());
+
+        List<Film> popularFilms = filmStorage.getMostPopularFilms(1000);
+
+        assertEquals(1, popularFilms.size());
     }
 }
