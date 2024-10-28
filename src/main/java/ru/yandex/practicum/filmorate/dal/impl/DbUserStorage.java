@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dal.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -94,11 +95,12 @@ public class DbUserStorage implements UserStorage {
     @Override
     public Optional<User> findById(int id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
-        User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
-        if (user == null) {
+        try {
+            User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
+            return Optional.of(user);
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
-        return Optional.of(user);
     }
 
     public List<User> getFriendsbyUserId(int userId) {

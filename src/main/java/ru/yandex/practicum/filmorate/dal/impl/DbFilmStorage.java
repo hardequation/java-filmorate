@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dal.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -126,12 +127,12 @@ public class DbFilmStorage implements FilmStorage {
                 "FROM films f " +
                 "INNER JOIN ratings r ON f.mpa_rating_id = r.rating_id " +
                 "WHERE f.film_id = ?; ";
-        Film film = jdbcTemplate.queryForObject(sqlQuery, filmRowMapper, id);
-        if (film == null) {
+        try {
+            Film film = jdbcTemplate.queryForObject(sqlQuery, filmRowMapper, id);
+            return Optional.of(film);
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
-
-        return Optional.of(film);
     }
 
     @Override
