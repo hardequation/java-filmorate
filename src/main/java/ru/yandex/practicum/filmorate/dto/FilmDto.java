@@ -35,4 +35,6 @@ public class FilmDto {
     private long duration;
 
     private LinkedHashSet<GenreDto> genres;
+
+    private LinkedHashSet<DirectorDto> director;
 }

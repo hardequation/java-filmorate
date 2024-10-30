@@ -14,6 +14,8 @@ public class FilmMapper {
 
     private final MpaRatingMapper ratingMapper;
 
+    private final DirectorMapper directorMapper;
+
     public Film map(CreateFilmDto dto) {
         return Film.builder()
                 .name(dto.getName())
@@ -22,6 +24,7 @@ public class FilmMapper {
                 .releaseDate(dto.getReleaseDate())
                 .duration(dto.getDuration())
                 .genres(genreMapper.mapToGenreList(dto.getGenres()))
+                .director(directorMapper.mapToDirectorList(dto.getDirector()))
                 .build();
     }
 
@@ -34,6 +37,7 @@ public class FilmMapper {
                 .releaseDate(dto.getReleaseDate())
                 .duration(dto.getDuration())
                 .genres(genreMapper.mapToGenreList(dto.getGenres()))
+                .director(directorMapper.mapToDirectorList(dto.getDirector()))
                 .build();
     }
 
@@ -46,6 +50,7 @@ public class FilmMapper {
                 .releaseDate(film.getReleaseDate())
                 .duration(film.getDuration())
                 .genres(genreMapper.mapToGenreDtoList(film.getGenres()))
+                .director(directorMapper.mapToDirectorDtoList(film.getDirector()))
                 .build();
     }
 }

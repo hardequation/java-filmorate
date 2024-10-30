@@ -50,7 +50,9 @@ public class FilmController {
         Film toCreate = filmMapper.map(filmDto);
         Film createdFilm = service.create(toCreate);
         service.addGenresForFilm(createdFilm);
+        service.addDirectorsForFilm(createdFilm);
         createdFilm.setGenres(toCreate.getGenres());
+        createdFilm.setDirector(toCreate.getDirector());
         return filmMapper.map(createdFilm);
     }
 
@@ -70,6 +72,7 @@ public class FilmController {
     public FilmDto getFilm(@PathVariable int id) {
         Film film = service.findFilmById(id);
         film.setGenres(service.findGenresForFilm(id));
+        film.setDirector(service.findDirectorsForFilm(id));
         return filmMapper.map(film);
     }
 

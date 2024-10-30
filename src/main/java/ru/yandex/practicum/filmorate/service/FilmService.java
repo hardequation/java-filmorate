@@ -2,11 +2,9 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.dal.GenreStorage;
-import ru.yandex.practicum.filmorate.dal.RatingStorage;
-import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
@@ -14,10 +12,7 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.GENRE_NOT_FOUND;
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.RATING_NOT_FOUND;
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.*;
 
 @Service
 public class FilmService {
@@ -29,15 +24,19 @@ public class FilmService {
 
     private final GenreStorage genreStorage;
 
+    private final DirectorStorage directorStorage;
+
     @Autowired
     public FilmService(FilmStorage dbFilmStorage,
                        UserStorage dbUserStorage,
                        RatingStorage ratingStorage,
-                       GenreStorage genreStorage) {
+                       GenreStorage genreStorage,
+                       DirectorStorage directorStorage) {
         this.filmStorage = dbFilmStorage;
         this.userStorage = dbUserStorage;
         this.ratingStorage = ratingStorage;
         this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
     }
 
     public List<Film> getFilms() {
@@ -52,6 +51,10 @@ public class FilmService {
         return ratingStorage.findAllMpaRatings();
     }
 
+    public List<Director> getDirectors() {
+        return directorStorage.findAllDirectors();
+    }
+
     public Film findFilmById(int id) {
         return filmStorage.findFilmById(id).orElseThrow(() -> new NotFoundException(FILM_NOT_FOUND + id));
     }
@@ -64,12 +67,36 @@ public class FilmService {
         return ratingStorage.findMpaRatingById(id).orElseThrow(() -> new NotFoundException(GENRE_NOT_FOUND + id));
     }
 
+    public Director findDirectorById(int id) {
+        return directorStorage.findDirectorById(id).orElseThrow(() -> new NotFoundException(DIRECTOR_NOT_FOUND + id));
+    }
+
     public LinkedHashSet<Genre> findGenresForFilm(int id) {
         return new LinkedHashSet<>(genreStorage.findGenresForFilm(id));
     }
 
     public void addGenresForFilm(Film film) {
         genreStorage.addGenresOfFilm(film);
+    }
+
+    public LinkedHashSet<Director> findDirectorsForFilm(int id) {
+        return new LinkedHashSet<>(directorStorage.findDirectorForFilm(id));
+    }
+
+    public void addDirectorsForFilm(Film film) {
+        directorStorage.addDirectorOfFilm(film);
+    }
+
+    public Director createDirector(Director director) {
+        return directorStorage.createDirector(director);
+    }
+
+    public Director updateDirector(Director director) {
+        return directorStorage.updateDirector(director);
+    }
+
+    public void deleteDirector(Integer id) {
+        directorStorage.deleteDirector(id);
     }
 
     public Film create(Film film) {
@@ -82,6 +109,7 @@ public class FilmService {
 
     public Film updateFilm(Film newFilm) {
         genreStorage.addGenresOfFilm(newFilm);
+        directorStorage.addDirectorOfFilm(newFilm);
         return filmStorage.update(newFilm);
     }
 
