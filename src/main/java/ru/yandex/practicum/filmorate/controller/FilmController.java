@@ -54,6 +54,11 @@ public class FilmController {
         return filmMapper.map(createdFilm);
     }
 
+    @DeleteMapping("/{filmId}")
+    public void removeFilm(@PathVariable Integer filmId) {
+        service.removeFilm(filmId);
+    }
+
     @PutMapping
     public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
         Film film = filmMapper.map(filmDto);
@@ -81,6 +86,8 @@ public class FilmController {
     @GetMapping("/popular")
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         List<Film> films = service.getMostPopularFilms(count);
-        return films.stream().map(filmMapper::map).toList();
+        return films.stream()
+                .map(filmMapper::map)
+                .toList();
     }
 }
