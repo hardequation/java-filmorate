@@ -41,6 +41,10 @@ public class FilmController {
     @GetMapping
     public List<FilmDto> findAll() {
         List<Film> films = service.getFilms();
+        for (Film film : films) {
+            film.setGenres(service.findGenresForFilm(film.getId()));
+            film.setDirector(service.findDirectorsForFilm(film.getId()));
+        }
         return films.stream().map(filmMapper::map).toList();
     }
 

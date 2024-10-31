@@ -123,7 +123,7 @@ public class DbFilmStorage implements FilmStorage {
                 "f.release_date as release_date, " +
                 "f.duration as duration, " +
                 "r.rating_id as rating_id, " +
-                "r.rating_name as rating, " +
+                "r.rating_name as rating " +
                 "FROM films f " +
                 "INNER JOIN ratings r ON f.mpa_rating_id = r.rating_id " +
                 "WHERE f.film_id = ?; ";

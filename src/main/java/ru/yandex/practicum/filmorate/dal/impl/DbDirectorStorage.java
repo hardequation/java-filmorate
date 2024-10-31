@@ -140,7 +140,7 @@ public class DbDirectorStorage implements DirectorStorage {
 
     @Override
     public List<Director> findDirectorForFilm(int filmId) {
-        String sql = "SELECT d.director_id, g.director_name " +
+        String sql = "SELECT d.director_id, d.director_name " +
                 "FROM films_directors fd " +
                 "INNER JOIN directors d " +
                 "ON fd.director_id = d.director_id " +

@@ -25,6 +25,7 @@ public class FilmRowMapper implements RowMapper<Film> {
                 .releaseDate(resultSet.getDate("release_date").toLocalDate())
                 .duration(resultSet.getLong("duration"))
                 .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>())
                 .mpa(rating)
                 .build();
     }
