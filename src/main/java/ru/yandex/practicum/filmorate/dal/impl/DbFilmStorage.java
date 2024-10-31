@@ -185,7 +185,7 @@ public class DbFilmStorage implements FilmStorage {
                 "LEFT JOIN films_directors fd on f.film_id = fd.film_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
-                "ORDER BY COUNT(f.film_id) DESC ";
+                "ORDER BY f.release_date DESC ";
         return jdbcTemplate.query(filmsSql, filmRowMapper, directorId);
     }
 
@@ -205,7 +205,7 @@ public class DbFilmStorage implements FilmStorage {
                 "LEFT JOIN films_directors fd on f.film_id = fd.film_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
-                "ORDER BY f.release_date DESC ";
+                "ORDER BY COUNT(f.film_id) DESC ";
         return jdbcTemplate.query(filmsSql, filmRowMapper, directorId);
     }
 

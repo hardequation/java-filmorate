@@ -11,19 +11,15 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
-import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
-import ru.yandex.practicum.filmorate.dal.impl.DbRatingStorage;
-import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
-import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.RatingRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.dal.impl.*;
+import ru.yandex.practicum.filmorate.dal.mappers.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -35,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @JdbcTest
-@Import({DbFilmStorage.class, DbGenreStorage.class, DbRatingStorage.class,
-        FilmRowMapper.class, GenreRowMapper.class, RatingRowMapper.class})
+@Import({DbFilmStorage.class, DbGenreStorage.class, DbRatingStorage.class, DbDirectorStorage.class,
+        FilmRowMapper.class, GenreRowMapper.class, RatingRowMapper.class, DirectorRowMapper.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DbFilmStorageIntegrationTest {
@@ -48,7 +44,12 @@ class DbFilmStorageIntegrationTest {
 
     private DbUserStorage userStorage;
 
+    private DbDirectorStorage directorStorage;
+
     private Film film = null;
+
+    @Autowired
+    private DirectorRowMapper directorRowMapper;
 
     @BeforeEach
     void setUp() {
@@ -56,6 +57,7 @@ class DbFilmStorageIntegrationTest {
         UserRowMapper userRowMapper = new UserRowMapper();
         filmStorage = new DbFilmStorage(template, filmRowMapper);
         userStorage = new DbUserStorage(template, userRowMapper);
+        directorStorage = new DbDirectorStorage(template, directorRowMapper);
 
         film = Film.builder()
                 .name("Name")
@@ -64,6 +66,7 @@ class DbFilmStorageIntegrationTest {
                 .mpa(MpaRating.builder().id(2).build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>())
                 .build();
     }
 
@@ -157,29 +160,32 @@ class DbFilmStorageIntegrationTest {
     @Test
     void testPopularFilms() {
         Film film1 = filmStorage.add(Film.builder()
-                        .name("Name1")
-                        .description("Login1")
-                        .duration(150L)
-                        .mpa(MpaRating.builder().id(2).name("PG").build())
-                        .releaseDate(LocalDate.of(1980, 10, 1))
-                        .genres(new LinkedHashSet<>())
-                        .build());
+                .name("Name1")
+                .description("Login1")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>())
+                .build());
         Film film2 = filmStorage.add(Film.builder()
-                        .name("Name2")
-                        .description("Login2")
-                        .duration(150L)
-                        .mpa(MpaRating.builder().id(2).name("PG").build())
-                        .releaseDate(LocalDate.of(1980, 10, 1))
-                        .genres(new LinkedHashSet<>())
-                        .build());
+                .name("Name2")
+                .description("Login2")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>())
+                .build());
         Film film3 = filmStorage.add(Film.builder()
-                        .name("Name3")
-                        .description("Login3")
-                        .duration(150L)
-                        .mpa(MpaRating.builder().id(2).name("PG").build())
-                        .releaseDate(LocalDate.of(1980, 10, 1))
-                        .genres(new LinkedHashSet<>())
-                        .build());
+                .name("Name3")
+                .description("Login3")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>())
+                .build());
         User user1 = userStorage.create(
                 User.builder()
                         .name("Name1")
@@ -233,10 +239,86 @@ class DbFilmStorageIntegrationTest {
                 .mpa(MpaRating.builder().id(2).name("PG").build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>())
                 .build());
 
         List<Film> popularFilms = filmStorage.getMostPopularFilms(1000);
 
         assertEquals(1, popularFilms.size());
+    }
+
+    @Test
+    @DisplayName("Получение отсортированных списков фильмов режиссёра по годам/лайкам")
+    void testSortedFilmsByDirector() {
+        Director director = directorStorage.createDirector(Director.builder()
+                .name("Director")
+                .build());
+        Film film1 = filmStorage.add(Film.builder()
+                .name("Name1")
+                .description("Login1")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1983, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>(Collections.singleton(director)))
+                .build());
+        Film film2 = filmStorage.add(Film.builder()
+                .name("Name2")
+                .description("Login2")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1982, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>(Collections.singleton(director)))
+                .build());
+        Film film3 = filmStorage.add(Film.builder()
+                .name("Name3")
+                .description("Login3")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1981, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .director(new LinkedHashSet<>(Collections.singleton(director)))
+                .build());
+        User user1 = userStorage.create(
+                User.builder()
+                        .name("Name1")
+                        .login("Loin1")
+                        .email("a1@g.com")
+                        .birthday(LocalDate.of(1980, 10, 30))
+                        .build());
+        User user2 = userStorage.create(
+                User.builder()
+                        .name("Name2")
+                        .login("Loin2")
+                        .email("a2@g.com")
+                        .birthday(LocalDate.of(1980, 10, 29))
+                        .build());
+
+        User user3 = userStorage.create(
+                User.builder()
+                        .name("Name3")
+                        .login("Login3")
+                        .email("a3@g.com")
+                        .birthday(LocalDate.of(1980, 10, 27))
+                        .build());
+
+        directorStorage.addDirectorOfFilm(film1);
+        directorStorage.addDirectorOfFilm(film2);
+        directorStorage.addDirectorOfFilm(film3);
+
+        filmStorage.addLike(film1.getId(), user1.getId());
+        filmStorage.addLike(film2.getId(), user1.getId());
+        filmStorage.addLike(film2.getId(), user2.getId());
+        filmStorage.addLike(film3.getId(), user1.getId());
+        filmStorage.addLike(film3.getId(), user2.getId());
+        filmStorage.addLike(film3.getId(), user3.getId());
+
+        List<Film> filmsByDirectorSortedByYear = filmStorage.getFilmsByDirectorSortedByYear(director.getId());
+        List<Film> filmsByDirectorSortedByLikes = filmStorage.getFilmsByDirectorSortedByLikes(director.getId());
+
+        assertEquals(film1.getId(), filmsByDirectorSortedByYear.getFirst().getId());
+        assertEquals(film3.getId(), filmsByDirectorSortedByLikes.getFirst().getId());
+
     }
 }
