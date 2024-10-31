@@ -24,5 +24,9 @@ public interface FilmStorage {
 
     List<Film> getMostPopularFilms(int size);
 
+    List<Film> getFilmsByDirectorSortedByYear(int directorId);
+
+    List<Film> getFilmsByDirectorSortedByLikes(int directorId);
+
     void removeAll();
 }

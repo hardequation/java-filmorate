@@ -140,4 +140,12 @@ public class FilmService {
     public List<Film> getMostPopularFilms(int size) {
         return filmStorage.getMostPopularFilms(size);
     }
+
+    public List<Film> getFilmsByDirectorSortedByYear(int directorId) {
+        return filmStorage.getFilmsByDirectorSortedByYear(directorId);
+    }
+
+    public List<Film> getFilmsByDirectorSortedByLikes(int directorId) {
+        return filmStorage.getFilmsByDirectorSortedByLikes(directorId);
+    }
 }

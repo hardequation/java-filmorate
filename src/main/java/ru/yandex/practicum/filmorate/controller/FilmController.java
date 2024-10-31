@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +24,9 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Validated
@@ -93,8 +96,46 @@ public class FilmController {
     @GetMapping("/popular")
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
         List<Film> films = service.getMostPopularFilms(count);
+        for (Film film : films) {
+            film.setGenres(service.findGenresForFilm(film.getId()));
+            film.setDirector(service.findDirectorsForFilm(film.getId()));
+        }
         return films.stream()
                 .map(filmMapper::map)
                 .toList();
+    }
+
+    @GetMapping("/director/{directorId}")
+    public ResponseEntity<Object> getFilmsByDirector(@PathVariable Integer directorId,
+                                                     @RequestParam(name = "sortBy", required = false) String sortBy) {
+        try {
+            List<Film> films;
+            switch (sortBy.toLowerCase()) {
+                case "year":
+                    films = service.getFilmsByDirectorSortedByYear(directorId);
+                    break;
+                case "likes":
+                    films = service.getFilmsByDirectorSortedByLikes(directorId);
+                    break;
+                default:
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "Invalid sortBy parameter: '" + sortBy + "'. Allowed values - year, likes");
+                    return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            for (Film film : films) {
+                film.setGenres(service.findGenresForFilm(film.getId()));
+                film.setDirector(service.findDirectorsForFilm(film.getId()));
+            }
+            return ResponseEntity.ok(films.stream()
+                    .map(filmMapper::map)
+                    .toList());
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.internalServerError().body("Internal Server Error");
+        }
     }
 }
