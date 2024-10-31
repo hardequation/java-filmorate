@@ -34,5 +34,5 @@ public class CreateFilmDto {
 
     private LinkedHashSet<GenreDto> genres;
 
-    private LinkedHashSet<DirectorDto> director;
+    private LinkedHashSet<DirectorDto> directors;
 }

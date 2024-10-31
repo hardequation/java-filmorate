@@ -97,7 +97,7 @@ public class DbDirectorStorage implements DirectorStorage {
     public void addDirectorOfFilm(Film film) {
         String addFilmDirector = "MERGE INTO films_directors (film_id, director_id) VALUES (?, ?)";
 
-        List<Director> directors = film.getDirector().stream().toList();
+        List<Director> directors = film.getDirectors().stream().toList();
         if (directors.isEmpty()) {
             return;
         }

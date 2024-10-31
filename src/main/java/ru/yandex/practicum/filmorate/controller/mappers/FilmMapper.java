@@ -24,7 +24,7 @@ public class FilmMapper {
                 .releaseDate(dto.getReleaseDate())
                 .duration(dto.getDuration())
                 .genres(genreMapper.mapToGenreList(dto.getGenres()))
-                .director(directorMapper.mapToDirectorList(dto.getDirector()))
+                .directors(directorMapper.mapToDirectorList(dto.getDirectors()))
                 .build();
     }
 
@@ -37,7 +37,7 @@ public class FilmMapper {
                 .releaseDate(dto.getReleaseDate())
                 .duration(dto.getDuration())
                 .genres(genreMapper.mapToGenreList(dto.getGenres()))
-                .director(directorMapper.mapToDirectorList(dto.getDirector()))
+                .directors(directorMapper.mapToDirectorList(dto.getDirectors()))
                 .build();
     }
 
@@ -50,7 +50,7 @@ public class FilmMapper {
                 .releaseDate(film.getReleaseDate())
                 .duration(film.getDuration())
                 .genres(genreMapper.mapToGenreDtoList(film.getGenres()))
-                .director(directorMapper.mapToDirectorDtoList(film.getDirector()))
+                .directors(directorMapper.mapToDirectorDtoList(film.getDirectors()))
                 .build();
     }
 }

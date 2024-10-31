@@ -36,5 +36,5 @@ public class FilmDto {
 
     private LinkedHashSet<GenreDto> genres;
 
-    private LinkedHashSet<DirectorDto> director;
+    private LinkedHashSet<DirectorDto> directors;
 }

@@ -46,7 +46,7 @@ public class FilmController {
         List<Film> films = service.getFilms();
         for (Film film : films) {
             film.setGenres(service.findGenresForFilm(film.getId()));
-            film.setDirector(service.findDirectorsForFilm(film.getId()));
+            film.setDirectors(service.findDirectorsForFilm(film.getId()));
         }
         return films.stream().map(filmMapper::map).toList();
     }
@@ -59,7 +59,7 @@ public class FilmController {
         service.addGenresForFilm(createdFilm);
         service.addDirectorsForFilm(createdFilm);
         createdFilm.setGenres(toCreate.getGenres());
-        createdFilm.setDirector(toCreate.getDirector());
+        createdFilm.setDirectors(toCreate.getDirectors());
         return filmMapper.map(createdFilm);
     }
 
@@ -79,7 +79,7 @@ public class FilmController {
     public FilmDto getFilm(@PathVariable int id) {
         Film film = service.findFilmById(id);
         film.setGenres(service.findGenresForFilm(id));
-        film.setDirector(service.findDirectorsForFilm(id));
+        film.setDirectors(service.findDirectorsForFilm(id));
         return filmMapper.map(film);
     }
 
@@ -98,7 +98,7 @@ public class FilmController {
         List<Film> films = service.getMostPopularFilms(count);
         for (Film film : films) {
             film.setGenres(service.findGenresForFilm(film.getId()));
-            film.setDirector(service.findDirectorsForFilm(film.getId()));
+            film.setDirectors(service.findDirectorsForFilm(film.getId()));
         }
         return films.stream()
                 .map(filmMapper::map)
@@ -125,7 +125,7 @@ public class FilmController {
 
             for (Film film : films) {
                 film.setGenres(service.findGenresForFilm(film.getId()));
-                film.setDirector(service.findDirectorsForFilm(film.getId()));
+                film.setDirectors(service.findDirectorsForFilm(film.getId()));
             }
             return ResponseEntity.ok(films.stream()
                     .map(filmMapper::map)

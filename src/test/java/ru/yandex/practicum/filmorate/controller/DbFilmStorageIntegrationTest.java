@@ -66,7 +66,7 @@ class DbFilmStorageIntegrationTest {
                 .mpa(MpaRating.builder().id(2).build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
                 .build();
     }
 
@@ -166,7 +166,7 @@ class DbFilmStorageIntegrationTest {
                 .mpa(MpaRating.builder().id(2).name("PG").build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
                 .build());
         Film film2 = filmStorage.add(Film.builder()
                 .name("Name2")
@@ -175,7 +175,7 @@ class DbFilmStorageIntegrationTest {
                 .mpa(MpaRating.builder().id(2).name("PG").build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
                 .build());
         Film film3 = filmStorage.add(Film.builder()
                 .name("Name3")
@@ -184,7 +184,7 @@ class DbFilmStorageIntegrationTest {
                 .mpa(MpaRating.builder().id(2).name("PG").build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
                 .build());
         User user1 = userStorage.create(
                 User.builder()
@@ -239,7 +239,7 @@ class DbFilmStorageIntegrationTest {
                 .mpa(MpaRating.builder().id(2).name("PG").build())
                 .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
                 .build());
 
         List<Film> popularFilms = filmStorage.getMostPopularFilms(1000);
@@ -258,27 +258,27 @@ class DbFilmStorageIntegrationTest {
                 .description("Login1")
                 .duration(150L)
                 .mpa(MpaRating.builder().id(2).name("PG").build())
-                .releaseDate(LocalDate.of(1983, 10, 1))
+                .releaseDate(LocalDate.of(1980, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>(Collections.singleton(director)))
+                .directors(new LinkedHashSet<>(Collections.singleton(director)))
                 .build());
         Film film2 = filmStorage.add(Film.builder()
                 .name("Name2")
                 .description("Login2")
                 .duration(150L)
                 .mpa(MpaRating.builder().id(2).name("PG").build())
-                .releaseDate(LocalDate.of(1982, 10, 1))
+                .releaseDate(LocalDate.of(1981, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>(Collections.singleton(director)))
+                .directors(new LinkedHashSet<>(Collections.singleton(director)))
                 .build());
         Film film3 = filmStorage.add(Film.builder()
                 .name("Name3")
                 .description("Login3")
                 .duration(150L)
                 .mpa(MpaRating.builder().id(2).name("PG").build())
-                .releaseDate(LocalDate.of(1981, 10, 1))
+                .releaseDate(LocalDate.of(1982, 10, 1))
                 .genres(new LinkedHashSet<>())
-                .director(new LinkedHashSet<>(Collections.singleton(director)))
+                .directors(new LinkedHashSet<>(Collections.singleton(director)))
                 .build());
         User user1 = userStorage.create(
                 User.builder()
