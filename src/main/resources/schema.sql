@@ -52,3 +52,11 @@ CREATE TABLE IF NOT EXISTS films_genres (
     CONSTRAINT fk_genre_id FOREIGN KEY (genre_id) REFERENCES genres (genre_id) ON DELETE CASCADE,
     PRIMARY KEY (film_id, genre_id)
 );
+
+CREATE TABLE IF NOT EXISTS reviews (
+    review_id SERIAL PRIMARY KEY,
+    film_id INTEGER NOT NULL,
+    review_type VARCHAR(255) NOT NULL,
+    assessment VARCHAR(255) NOT NULL,
+    rating INTEGER NOT NULL
+);
