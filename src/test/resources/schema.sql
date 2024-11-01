@@ -52,3 +52,16 @@ CREATE TABLE IF NOT EXISTS films_genres (
     CONSTRAINT fk_genre_id FOREIGN KEY (genre_id) REFERENCES genres (genre_id) ON DELETE CASCADE,
     PRIMARY KEY (film_id, genre_id)
 );
+
+CREATE TABLE IF NOT EXISTS directors (
+    director_id SERIAL PRIMARY KEY,
+    director_name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS films_directors (
+    film_id INTEGER NOT NULL,
+    director_id INTEGER NOT NULL,
+    CONSTRAINT fk_film_id3 FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE,
+    CONSTRAINT fk_director_id FOREIGN KEY (director_id) REFERENCES directors (director_id) ON DELETE CASCADE,
+    PRIMARY KEY (film_id, director_id)
+);
