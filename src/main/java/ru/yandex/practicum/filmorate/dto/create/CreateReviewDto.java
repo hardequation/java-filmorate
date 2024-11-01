@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.dto.create;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
-@Builder
+@RequiredArgsConstructor
 public class CreateReviewDto {
 
     @NotNull

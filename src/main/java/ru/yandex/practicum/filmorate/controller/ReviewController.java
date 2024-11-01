@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.mappers.ReviewMapper;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
+import ru.yandex.practicum.filmorate.dto.create.CreateReviewDto;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -32,14 +33,13 @@ public class ReviewController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ReviewDto create(@Valid @RequestBody ReviewDto dto) {
+    public ReviewDto create(@Valid @RequestBody CreateReviewDto dto) {
         Review toCreate = reviewMapper.map(dto);
         Review createdFilm = service.create(toCreate);
         return reviewMapper.map(createdFilm);
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ReviewDto update(@Valid @RequestBody ReviewDto dto) {
         Review review = reviewMapper.map(dto);
         Review updatedReview = service.update(review);
