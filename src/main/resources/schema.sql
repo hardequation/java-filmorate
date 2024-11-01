@@ -69,7 +69,20 @@ CREATE TABLE IF NOT EXISTS films_directors (
 CREATE TABLE IF NOT EXISTS reviews (
     review_id SERIAL PRIMARY KEY,
     film_id INTEGER NOT NULL,
-    review_type VARCHAR(255) NOT NULL,
-    assessment VARCHAR(255) NOT NULL,
-    rating INTEGER NOT NULL
+    user_id INTEGER NOT NULL,
+    is_positive BOOLEAN NOT NULL,
+    useful BOOLEAN NOT NULL,
+    content VARCHAR(500),
+    rating INTEGER NOT NULL,
+    CONSTRAINT fk_film_id4 FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_id2 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS review_likes (
+    review_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    is_like BOOLEAN NOT NULL,
+    CONSTRAINT fk_review_id FOREIGN KEY (review_id) REFERENCES reviews (review_id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_id3 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    PRIMARY KEY (review_id, user_id)
+)

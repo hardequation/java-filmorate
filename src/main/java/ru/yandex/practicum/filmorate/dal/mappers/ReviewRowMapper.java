@@ -1,10 +1,7 @@
 package ru.yandex.practicum.filmorate.dal.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
-import ru.yandex.practicum.filmorate.model.review.Review;
-import ru.yandex.practicum.filmorate.model.review.ReviewAssessment;
-import ru.yandex.practicum.filmorate.model.review.ReviewRating;
-import ru.yandex.practicum.filmorate.model.review.ReviewType;
+import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,13 +11,13 @@ public class ReviewRowMapper implements RowMapper<Review> {
     @Override
     public Review mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Review.builder()
-                .id(rs.getInt("id"))
+                .reviewId(rs.getInt("review_id"))
                 .filmId(rs.getInt("film_id"))
-                .type(ReviewType.valueOf(rs.getString("review_type")))
-                .assessment(ReviewAssessment.valueOf(rs.getString("assessment")))
-                .rating(ReviewRating.builder()
-                        .value(rs.getInt("rating"))
-                        .build())
+                .userId(rs.getInt("user_id"))
+                .isPositive(rs.getBoolean("is_positive"))
+                .useful(rs.getBoolean("useful"))
+                .content(rs.getString("content"))
+                .rating(rs.getInt("rating"))
                 .build();
     }
 }

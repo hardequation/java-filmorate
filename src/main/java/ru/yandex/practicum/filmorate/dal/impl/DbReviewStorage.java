@@ -1,13 +1,17 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.ReviewStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.review.Review;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -17,39 +21,39 @@ import java.util.Optional;
 
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.REVIEW_NOT_FOUND;
 
+@Repository
+@RequiredArgsConstructor
 public class DbReviewStorage implements ReviewStorage {
 
-    public static final int INITIAL_RATING = 0;
-    
     private final JdbcTemplate jdbcTemplate;
-    
-    private final ReviewRowMapper rowMapper;
 
-    @Autowired
-    public DbReviewStorage(JdbcTemplate jdbcTemplate, ReviewRowMapper rowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.rowMapper = rowMapper;
-    }
+    private final ReviewRowMapper rowMapper;
 
     @Override
     public Review add(Review review) {
-        String addFilmsql = "INSERT INTO reviews (film_id, type, assessment, rating) " +
-                "VALUES (?, ?, ?, ?)";
+        String addFilmsql = "INSERT INTO reviews (film_id, user_id, is_positive, useful, content, rating) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(addFilmsql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, review.getFilmId());
-            ps.setString(2, review.getType().toString());
-            ps.setString(3, review.getAssessment().toString());
-            ps.setInt(4, INITIAL_RATING );
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(addFilmsql, Statement.RETURN_GENERATED_KEYS);
+                ps.setInt(1, review.getFilmId());
+                ps.setInt(2, review.getUserId());
+                ps.setBoolean(3, review.isPositive());
+                ps.setBoolean(4, review.isUseful());
+                ps.setString(5, review.getContent());
+                ps.setInt(6, review.getRating());
 
-            return ps;
-        }, keyHolder);
+                return ps;
+            }, keyHolder);
+        } catch (DataIntegrityViolationException e) {
+            throw new ValidationException(e.getMessage());
+        }
 
         int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
-        review.setId(generatedId);
+        review.setReviewId(generatedId);
 
         return review;
     }
@@ -57,36 +61,46 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public Review update(Review newReview) {
         String sql = "UPDATE reviews SET " +
-                "film_id = ?, review_type = ?, assessment = ?, rating = ? " +
-                "WHERE id = ?";
+                "film_id = ?, user_id = ?, is_positive = ?, useful = ?, content = ?, rating = ? " +
+                "WHERE review_id = ?";
 
         int rowsAffected = jdbcTemplate.update(sql,
                 newReview.getFilmId(),
-                newReview.getType(),
-                newReview.getAssessment(),
-                newReview.getRating());
+                newReview.getUserId(),
+                newReview.isPositive(),
+                newReview.isUseful(),
+                newReview.getContent(),
+                newReview.getRating(),
+                newReview.getReviewId());
 
         if (rowsAffected == 0) {
-            throw new NotFoundException(REVIEW_NOT_FOUND + newReview.getId());
+            throw new NotFoundException(REVIEW_NOT_FOUND + newReview.getReviewId());
         }
         return newReview;
     }
 
     @Override
     public void remove(int id) {
-        String sql = "DELETE FROM reviews WHERE id = ?";
+        String sql = "DELETE FROM reviews WHERE review_id = ?";
 
         jdbcTemplate.update(sql, id);
     }
 
     @Override
+    public void removeAll() {
+        String sql = "DELETE FROM reviews";
+
+        jdbcTemplate.update(sql);
+    }
+
+    @Override
     public Optional<Review> findById(int id) {
-        Review review = jdbcTemplate.queryForObject("SELECT * FROM reviews WHERE id = ?", rowMapper, id);
-        if (review == null) {
+        try {
+            Review review = jdbcTemplate.queryForObject("SELECT * FROM reviews WHERE review_id = ?", rowMapper, id);
+            return Optional.of(review);
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
-
-        return Optional.of(review);
     }
 
     @Override
@@ -95,4 +109,51 @@ public class DbReviewStorage implements ReviewStorage {
 
         return jdbcTemplate.query(sql, rowMapper, filmId, size);
     }
+
+    @Override
+    public void addRating(int reviewId, int userId, boolean isLike) {
+        String sql = "MERGE INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, ?)";
+        try {
+            jdbcTemplate.update(sql, reviewId, userId, isLike);
+        } catch (DataIntegrityViolationException e) {
+            throw new ValidationException(e.getMessage());
+        }
+
+        String increaseRating = "UPDATE reviews SET rating = rating + 1 WHERE review_id = ?";
+        String decreaseRating = "UPDATE reviews SET rating = rating - 1 WHERE review_id = ?";
+
+        try {
+            if (isLike) {
+                jdbcTemplate.update(increaseRating, reviewId);
+            } else {
+                jdbcTemplate.update(decreaseRating, reviewId);
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new ValidationException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void removeRating(int reviewId, int userId, boolean isLike) {
+        String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
+        try {
+            jdbcTemplate.update(sql, reviewId, userId);
+        } catch (DataIntegrityViolationException e) {
+            throw new ValidationException(e.getMessage());
+        }
+
+        String increaseRating = "UPDATE reviews SET rating = rating + 1 WHERE review_id = ?";
+        String decreaseRating = "UPDATE reviews SET rating = rating - 1 WHERE review_id = ?";
+
+        try {
+            if (isLike) {
+                jdbcTemplate.update(decreaseRating, reviewId);
+            } else {
+                jdbcTemplate.update(increaseRating, reviewId);
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new ValidationException(e.getMessage());
+        }
+    }
+
 }

@@ -1,16 +1,12 @@
-package ru.yandex.practicum.filmorate.dto;
+package ru.yandex.practicum.filmorate.dto.create;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class ReviewDto {
-
-    @NotNull
-    Integer reviewId;
+public class CreateReviewDto {
 
     @NotNull
     Integer filmId;
@@ -24,9 +20,6 @@ public class ReviewDto {
     @NotNull
     boolean useful;
 
-    @NotNull
-    @Positive
-    Integer rating;
-
     String content;
+
 }

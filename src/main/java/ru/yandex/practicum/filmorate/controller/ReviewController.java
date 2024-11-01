@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.mappers.ReviewMapper;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
-import ru.yandex.practicum.filmorate.model.review.Review;
+import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public class ReviewController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ReviewDto create(@Valid  @RequestBody ReviewDto dto) {
+    public ReviewDto create(@Valid @RequestBody ReviewDto dto) {
         Review toCreate = reviewMapper.map(dto);
         Review createdFilm = service.create(toCreate);
         return reviewMapper.map(createdFilm);
@@ -64,4 +64,25 @@ public class ReviewController {
                 .map(reviewMapper::map)
                 .toList();
     }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void like(@PathVariable int id, @PathVariable int userId) {
+        service.addRating(id, userId, true);
+    }
+
+    @PutMapping("/{id}/dislike/{userId}")
+    public void dislike(@PathVariable int id, @PathVariable int userId) {
+        service.addRating(id, userId, false);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+        service.removeRating(id, userId, true);
+    }
+
+    @DeleteMapping("/{id}/dislike/{userId}")
+    public void removeDislike(@PathVariable int id, @PathVariable int userId) {
+        service.removeRating(id, userId, false);
+    }
+
 }
