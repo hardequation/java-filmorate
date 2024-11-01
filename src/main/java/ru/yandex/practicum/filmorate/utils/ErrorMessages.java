@@ -10,5 +10,7 @@ public class ErrorMessages {
 
     public static final String GENRE_NOT_FOUND = "There is no genre with such id: ";
 
+    public static final String DIRECTOR_NOT_FOUND = "There is no director with such id: ";
+
     public static final String REVIEW_NOT_FOUND = "There is no review with such id: ";
 }
