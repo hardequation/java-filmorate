@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.dal.impl.DbDirectorStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbRatingStorage;
-import ru.yandex.practicum.filmorate.dal.impl.DbReviewStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
