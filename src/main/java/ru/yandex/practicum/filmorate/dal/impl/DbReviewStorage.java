@@ -31,8 +31,8 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public Review add(Review review) {
-        String addFilmsql = "INSERT INTO reviews (film_id, user_id, is_positive, useful, content, rating) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String addFilmsql = "INSERT INTO reviews (film_id, user_id, is_positive, useful, content) " +
+                "VALUES (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -42,9 +42,8 @@ public class DbReviewStorage implements ReviewStorage {
                 ps.setInt(1, review.getFilmId());
                 ps.setInt(2, review.getUserId());
                 ps.setBoolean(3, review.isPositive());
-                ps.setBoolean(4, review.isUseful());
+                ps.setInt(4, review.getUseful());
                 ps.setString(5, review.getContent());
-                ps.setInt(6, review.getRating());
 
                 return ps;
             }, keyHolder);
@@ -61,16 +60,15 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public Review update(Review newReview) {
         String sql = "UPDATE reviews SET " +
-                "film_id = ?, user_id = ?, is_positive = ?, useful = ?, content = ?, rating = ? " +
+                "film_id = ?, user_id = ?, is_positive = ?, useful = ?, content = ? " +
                 "WHERE review_id = ?";
 
         int rowsAffected = jdbcTemplate.update(sql,
                 newReview.getFilmId(),
                 newReview.getUserId(),
                 newReview.isPositive(),
-                newReview.isUseful(),
+                newReview.getUseful(),
                 newReview.getContent(),
-                newReview.getRating(),
                 newReview.getReviewId());
 
         if (rowsAffected == 0) {
@@ -119,8 +117,8 @@ public class DbReviewStorage implements ReviewStorage {
             throw new ValidationException(e.getMessage());
         }
 
-        String increaseRating = "UPDATE reviews SET rating = rating + 1 WHERE review_id = ?";
-        String decreaseRating = "UPDATE reviews SET rating = rating - 1 WHERE review_id = ?";
+        String increaseRating = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
+        String decreaseRating = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
 
         try {
             if (isLike) {
@@ -142,8 +140,8 @@ public class DbReviewStorage implements ReviewStorage {
             throw new ValidationException(e.getMessage());
         }
 
-        String increaseRating = "UPDATE reviews SET rating = rating + 1 WHERE review_id = ?";
-        String decreaseRating = "UPDATE reviews SET rating = rating - 1 WHERE review_id = ?";
+        String increaseRating = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
+        String decreaseRating = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
 
         try {
             if (isLike) {

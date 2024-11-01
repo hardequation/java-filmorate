@@ -22,11 +22,8 @@ public class ReviewDto {
     boolean isPositive;
 
     @NotNull
-    boolean useful;
-
-    @NotNull
     @Positive
-    Integer rating;
+    Integer useful;
 
     String content;
 }

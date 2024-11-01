@@ -17,9 +17,6 @@ public class CreateReviewDto {
     @NotNull
     boolean isPositive;
 
-    @NotNull
-    boolean useful;
-
     String content;
 
 }

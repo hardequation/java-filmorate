@@ -15,9 +15,7 @@ public class Review {
 
     boolean isPositive;
 
-    boolean useful;
-
     String content;
 
-    Integer rating;
+    Integer useful;
 }

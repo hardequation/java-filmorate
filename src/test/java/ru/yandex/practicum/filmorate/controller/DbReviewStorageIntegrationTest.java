@@ -94,8 +94,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build();
 
         Review savedReview = reviewStorage.add(review);
@@ -116,8 +115,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId() + 1)
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build();
 
         ValidationException exception = assertThrows(ValidationException.class, () -> reviewStorage.add(review));
@@ -134,8 +132,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId() + 1)
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build();
 
         ValidationException exception = assertThrows(ValidationException.class, () -> reviewStorage.add(review));
@@ -151,20 +148,17 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .content("First content")
                 .build();
 
         Review createdReview = reviewStorage.add(review);
 
         createdReview.setContent("Updated content");
-        createdReview.setUseful(false);
         createdReview.setPositive(false);
 
         Review updatedReview = reviewStorage.update(createdReview);
         assertFalse(updatedReview.isPositive());
-        assertFalse(updatedReview.isUseful());
         assertEquals("Updated content", updatedReview.getContent());
     }
 
@@ -176,8 +170,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(false)
-                .useful(false)
-                .rating(0)
+                .useful(0)
                 .build());
         Review createdReview = reviewStorage.add(review);
 
@@ -199,8 +192,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(false)
-                .useful(false)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.remove(nonExistingReviewID);
@@ -214,15 +206,13 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
         reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(false)
-                .useful(false)
-                .rating(0)
+                .useful(0)
                 .content("Some content")
                 .build());
 
@@ -241,8 +231,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         Review createdReview = reviewStorage.add(review);
@@ -259,8 +248,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
@@ -277,16 +265,14 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         Review review2 = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(false)
-                .useful(false)
-                .rating(0)
+                .useful(0)
                 .build());
 
         List<Review> reviews = reviewStorage.findByFilmId(createdFilm.getId(), 10);
@@ -318,17 +304,16 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
 
         reviewStorage.addRating(review.getReviewId(), createdUser1.getId(), true);
-        assertEquals(1, reviewStorage.findById(review.getReviewId()).get().getRating());
+        assertEquals(1, reviewStorage.findById(review.getReviewId()).get().getUseful());
 
         reviewStorage.addRating(review.getReviewId(), createdUser2.getId(), false);
-        assertEquals(0, reviewStorage.findById(review.getReviewId()).get().getRating());
+        assertEquals(0, reviewStorage.findById(review.getReviewId()).get().getUseful());
     }
 
     @Test
@@ -339,8 +324,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
@@ -358,8 +342,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
@@ -377,8 +360,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
@@ -396,8 +378,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
@@ -424,21 +405,20 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
 
         reviewStorage.addRating(review.getReviewId(), createdUser1.getId(), true);
-        assertEquals(1, reviewStorage.findById(review.getReviewId()).get().getRating());
+        assertEquals(1, reviewStorage.findById(review.getReviewId()).get().getUseful());
         reviewStorage.addRating(review.getReviewId(), createdUser2.getId(), false);
-        assertEquals(0, reviewStorage.findById(review.getReviewId()).get().getRating());
+        assertEquals(0, reviewStorage.findById(review.getReviewId()).get().getUseful());
 
         reviewStorage.removeRating(review.getReviewId(), createdUser1.getId(), true);
-        assertEquals(-1, reviewStorage.findById(review.getReviewId()).get().getRating());
+        assertEquals(-1, reviewStorage.findById(review.getReviewId()).get().getUseful());
         reviewStorage.removeRating(review.getReviewId(), createdUser2.getId(), false);
-        assertEquals(0, reviewStorage.findById(review.getReviewId()).get().getRating());
+        assertEquals(0, reviewStorage.findById(review.getReviewId()).get().getUseful());
     }
 
     @Test
@@ -449,8 +429,7 @@ class DbReviewStorageIntegrationTest {
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
-                .useful(true)
-                .rating(0)
+                .useful(0)
                 .build());
 
         reviewStorage.add(review);
