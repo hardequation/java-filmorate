@@ -25,4 +25,10 @@ public interface FilmStorage {
     List<Film> getMostPopularFilms(int size);
 
     void removeAll();
+
+    List<Film> searchFilmsByDirector(String query);
+
+    List<Film> searchFilmsByTitle(String query);
+
+    List<Film> searchFilmsByTitleAndDirector(String query);
 }

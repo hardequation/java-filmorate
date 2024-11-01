@@ -83,4 +83,9 @@ public class FilmController {
         List<Film> films = service.getMostPopularFilms(count);
         return films.stream().map(filmMapper::map).toList();
     }
+
+    @GetMapping("/search")
+    public List<Film> seacrhFilms(@RequestParam() String query, @RequestParam() List<String> by) {
+        return service.searchFilms(query, by);
+    }
 }

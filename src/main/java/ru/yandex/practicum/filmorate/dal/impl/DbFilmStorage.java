@@ -178,6 +178,38 @@ public class DbFilmStorage implements FilmStorage {
         jdbcTemplate.update(removeFilmsSql);
     }
 
+    @Override
+    public List<Film> searchFilmsByTitle(String query) {
+        String sqlQuery = "SELECT f.name FROM films AS f WHERE f.name LIKE '" + query + "%'" +
+                "JOIN film_likes AS fl ON fl.id = f.id" +
+                "ORDER BY fl.COUNT(*)";
+        return jdbcTemplate.query(sqlQuery, filmRowMapper);
+    }
+
+    @Override
+    public List<Film> searchFilmsByDirector(String query) {
+        String sqlQuery = "SELECT DISTINCT f.id, f.name " +
+                "FROM films AS f " +
+                "JOIN film_likes AS fl ON fl.film_id = f.id " +
+                "JOIN films_directors AS fd ON fd.film_id = f.id " +
+                "JOIN directors AS d ON d.director_id = fd.director_id " +
+                "WHERE d.name LIKE '" + query + "%'" +
+                "ORDER BY COUNT(fl.id) DESC";
+        return jdbcTemplate.query(sqlQuery, filmRowMapper);
+    }
+
+    @Override
+    public List<Film> searchFilmsByTitleAndDirector(String query) {
+        String sqlQuery = "SELECT DISTINCT f.id, f.name " +
+                "FROM films AS f " +
+                "JOIN film_likes AS fl ON fl.film_id = f.id " +
+                "JOIN films_directors AS fd ON fd.film_id = f.id " +
+                "JOIN directors AS d ON d.director_id = fd.director_id " +
+                "WHERE d.name LIKE '" + query + "%' or f.name LIKE '" + query + "%'" +
+                "ORDER BY COUNT(fl.id) DESC";
+        return jdbcTemplate.query(sqlQuery, filmRowMapper);
+    }
+
     public List<Integer> getLikesByFilmId(Integer filmId) {
         String sqlQuery = "SELECT liked_user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("liked_user_id"), filmId);

@@ -7,10 +7,12 @@ import ru.yandex.practicum.filmorate.dal.GenreStorage;
 import ru.yandex.practicum.filmorate.dal.RatingStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -107,5 +109,25 @@ public class FilmService {
 
     public List<Film> getMostPopularFilms(int size) {
         return filmStorage.getMostPopularFilms(size);
+    }
+
+    public List<Film> searchFilms(String query, List<String> by) {
+        if (by == null || by.isEmpty()) {
+            throw new ValidationException("Передано некорректное число параметров");
+        } else {
+            if (by.size() == 2) {
+                return filmStorage.searchFilmsByTitleAndDirector(query);
+            } else if (by.size() == 1) {
+                if (by.getFirst().equals("title")) {
+                    return filmStorage.searchFilmsByTitle(query);
+                } else if(by.getFirst().equals("director")) {
+                    return filmStorage.searchFilmsByDirector(query);
+                } else {
+                    throw new NotFoundException("Неверно указан параметр поиска");
+                }
+            } else {
+                throw new ValidationException("Передано некорректное число параметров");
+            }
+        }
     }
 }
