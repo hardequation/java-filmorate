@@ -13,10 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.*;
 import ru.yandex.practicum.filmorate.dal.mappers.*;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.MpaRating;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -314,8 +311,8 @@ class DbFilmStorageIntegrationTest {
         filmStorage.addLike(film3.getId(), user2.getId());
         filmStorage.addLike(film3.getId(), user3.getId());
 
-        List<Film> filmsByDirectorSortedByYear = filmStorage.getFilmsByDirectorSortedByYear(director.getId());
-        List<Film> filmsByDirectorSortedByLikes = filmStorage.getFilmsByDirectorSortedByLikes(director.getId());
+        List<Film> filmsByDirectorSortedByYear = filmStorage.getFilmsByDirectorSorted(director.getId(), FilmSortParam.FILMS_BY_RELEASE_DATE);
+        List<Film> filmsByDirectorSortedByLikes = filmStorage.getFilmsByDirectorSorted(director.getId(), FilmSortParam.POPULAR_FILMS_BY_LIKES);
 
         assertEquals(film1.getId(), filmsByDirectorSortedByYear.getFirst().getId());
         assertEquals(film3.getId(), filmsByDirectorSortedByLikes.getFirst().getId());

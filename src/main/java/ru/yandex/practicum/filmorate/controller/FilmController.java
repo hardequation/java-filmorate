@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.yandex.practicum.filmorate.model.FilmSortParam.FILMS_BY_RELEASE_DATE;
+import static ru.yandex.practicum.filmorate.model.FilmSortParam.POPULAR_FILMS_BY_LIKES;
+
 @Slf4j
 @Validated
 @RestController
@@ -112,10 +115,10 @@ public class FilmController {
             List<Film> films;
             switch (sortBy.toLowerCase()) {
                 case "year":
-                    films = service.getFilmsByDirectorSortedByYear(directorId);
+                    films = service.getFilmsByDirectorSorted(directorId, FILMS_BY_RELEASE_DATE);
                     break;
                 case "likes":
-                    films = service.getFilmsByDirectorSortedByLikes(directorId);
+                    films = service.getFilmsByDirectorSorted(directorId, POPULAR_FILMS_BY_LIKES);
                     break;
                 default:
                     Map<String, Object> errorResponse = new HashMap<>();

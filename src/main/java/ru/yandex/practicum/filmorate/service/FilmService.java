@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -141,11 +138,7 @@ public class FilmService {
         return filmStorage.getMostPopularFilms(size);
     }
 
-    public List<Film> getFilmsByDirectorSortedByYear(int directorId) {
-        return filmStorage.getFilmsByDirectorSortedByYear(directorId);
-    }
-
-    public List<Film> getFilmsByDirectorSortedByLikes(int directorId) {
-        return filmStorage.getFilmsByDirectorSortedByLikes(directorId);
+    public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
+        return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);
     }
 }
