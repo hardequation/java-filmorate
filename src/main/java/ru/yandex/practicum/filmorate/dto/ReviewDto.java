@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
@@ -18,10 +19,10 @@ public class ReviewDto {
     Integer userId;
 
     @NotNull
+    @JsonProperty("isPositive")
     boolean isPositive;
 
-    @NotNull
-    Integer useful;
+    int useful;
 
     String content;
 }

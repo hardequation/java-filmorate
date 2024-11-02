@@ -48,7 +48,7 @@ public class DbReviewStorage implements ReviewStorage {
                 return ps;
             }, keyHolder);
         } catch (DataIntegrityViolationException e) {
-            throw new ValidationException(e.getMessage());
+            throw new NotFoundException(e.getMessage());
         }
 
         int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
@@ -60,14 +60,11 @@ public class DbReviewStorage implements ReviewStorage {
     @Override
     public Review update(Review newReview) {
         String sql = "UPDATE reviews SET " +
-                "film_id = ?, user_id = ?, is_positive = ?, useful = ?, content = ? " +
+                "is_positive = ?, content = ? " +
                 "WHERE review_id = ?";
 
         int rowsAffected = jdbcTemplate.update(sql,
-                newReview.getFilmId(),
-                newReview.getUserId(),
                 newReview.isPositive(),
-                newReview.getUseful(),
                 newReview.getContent(),
                 newReview.getReviewId());
 
@@ -117,15 +114,13 @@ public class DbReviewStorage implements ReviewStorage {
             throw new ValidationException(e.getMessage());
         }
 
-        String increaseRating = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
-        String decreaseRating = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
+        String updateSql = "UPDATE reviews r SET useful = ( " +
+                "SELECT COUNT(CASE WHEN is_like = true THEN 1 END) - COUNT(CASE WHEN is_like = false THEN 1 END) " +
+                "FROM review_likes rl " +
+                "WHERE rl.review_id = r.review_id and rl.review_id = ?);";
 
         try {
-            if (isLike) {
-                jdbcTemplate.update(increaseRating, reviewId);
-            } else {
-                jdbcTemplate.update(decreaseRating, reviewId);
-            }
+            jdbcTemplate.update(updateSql, reviewId);
         } catch (DataIntegrityViolationException e) {
             throw new ValidationException(e.getMessage());
         }

@@ -15,8 +15,9 @@ public class CreateReviewDto {
     Integer userId;
 
     @NotNull
-    boolean isPositive;
+    Boolean isPositive;
 
+    @NotNull
     String content;
 
 }

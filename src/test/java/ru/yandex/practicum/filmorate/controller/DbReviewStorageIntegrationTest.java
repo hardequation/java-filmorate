@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
@@ -118,7 +119,7 @@ class DbReviewStorageIntegrationTest {
                 .useful(0)
                 .build();
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> reviewStorage.add(review));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> reviewStorage.add(review));
         assertTrue(exception.getMessage().contains("Referential integrity constraint violation: \"FK_FILM_ID4:"));
     }
 
@@ -135,13 +136,13 @@ class DbReviewStorageIntegrationTest {
                 .useful(0)
                 .build();
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> reviewStorage.add(review));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> reviewStorage.add(review));
         assertTrue(exception.getMessage().contains("Referential integrity constraint violation: \"FK_USER_ID2:"));
     }
 
     @Test
     @DisplayName("Successful update")
-    void updateWrongReview() {
+    void updateReview() {
         Film createdFilm = filmStorage.add(film);
         User createdUser = userStorage.create(user);
         Review review = Review.builder()
@@ -293,21 +294,28 @@ class DbReviewStorageIntegrationTest {
         Film createdFilm = filmStorage.add(film);
         User createdUser = userStorage.create(user);
 
-        user.setLogin("newLogin1");
-        user.setEmail("new1@g.com");
-        User createdUser1 = userStorage.create(user);
-
-        user.setLogin("newLogin2");
-        user.setEmail("new2@g.com");
-        User createdUser2 = userStorage.create(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
                 .isPositive(true)
                 .useful(0)
                 .build());
-
         reviewStorage.add(review);
+
+        User createdUser1 = userStorage.create(
+                User.builder()
+                        .name("Name")
+                        .login("Login1")
+                        .email("a1@abc.com")
+                        .birthday(LocalDate.of(1990, 12, 14))
+                        .build());
+        User createdUser2 = userStorage.create(
+                User.builder()
+                        .name("Name")
+                        .login("Login2")
+                        .email("a2@abc.com")
+                        .birthday(LocalDate.of(1990, 12, 14))
+                        .build());
 
         reviewStorage.addRating(review.getReviewId(), createdUser1.getId(), true);
         assertEquals(1, reviewStorage.findById(review.getReviewId()).get().getUseful());
@@ -393,14 +401,6 @@ class DbReviewStorageIntegrationTest {
         Film createdFilm = filmStorage.add(film);
         User createdUser = userStorage.create(user);
 
-        user.setLogin("newLogin1");
-        user.setEmail("new1@g.com");
-        User createdUser1 = userStorage.create(user);
-
-        user.setLogin("newLogin2");
-        user.setEmail("new2@g.com");
-        User createdUser2 = userStorage.create(user);
-
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -408,8 +408,21 @@ class DbReviewStorageIntegrationTest {
                 .useful(0)
                 .build());
 
-        reviewStorage.add(review);
+        User createdUser1 = userStorage.create(
+                User.builder()
+                        .name("Name")
+                        .login("Login1")
+                        .email("a1@abc.com")
+                        .birthday(LocalDate.of(1990, 12, 14))
+                        .build());
 
+        User createdUser2 = userStorage.create(
+                User.builder()
+                        .name("Name")
+                        .login("Login2")
+                        .email("a2@abc.com")
+                        .birthday(LocalDate.of(1990, 12, 14))
+                        .build());
         reviewStorage.addRating(review.getReviewId(), createdUser1.getId(), true);
         assertEquals(1, reviewStorage.findById(review.getReviewId()).get().getUseful());
         reviewStorage.addRating(review.getReviewId(), createdUser2.getId(), false);
