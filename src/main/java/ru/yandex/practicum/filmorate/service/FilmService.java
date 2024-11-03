@@ -184,4 +184,12 @@ public class FilmService {
     public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year) {
         return filmStorage.getPopularFilmsSortedByYear(count, year);
     }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    public List<Film> getFilmRecommendationsForUser(int userId) {
+        return filmStorage.getFilmRecommendationsForUser(userId);
+    }
 }

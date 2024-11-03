@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,17 +12,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class DbRatingStorage implements RatingStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final RatingRowMapper ratingRowMapper;
-
-    @Autowired
-    public DbRatingStorage(JdbcTemplate jdbcTemplate, RatingRowMapper ratingRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.ratingRowMapper = ratingRowMapper;
-    }
 
     @Override
     public List<MpaRating> findAllMpaRatings() {

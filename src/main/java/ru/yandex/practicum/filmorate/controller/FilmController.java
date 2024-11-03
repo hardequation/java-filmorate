@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
 import ru.yandex.practicum.filmorate.controller.mappers.MpaRatingMapper;
-import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.create.CreateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -28,7 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.yandex.practicum.filmorate.model.FilmSortParam.*;
+import static ru.yandex.practicum.filmorate.model.FilmSortParam.FILMS_BY_RELEASE_DATE;
+import static ru.yandex.practicum.filmorate.model.FilmSortParam.POPULAR_FILMS_BY_LIKES;
 
 @Slf4j
 @Validated
@@ -140,6 +141,29 @@ public class FilmController {
                 film.setGenres(service.findGenresForFilm(film.getId()));
                 film.setDirectors(service.findDirectorsForFilm(film.getId()));
             }
+            return ResponseEntity.ok(films.stream()
+                    .map(filmMapper::map)
+                    .toList());
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.internalServerError().body("Internal Server Error");
+        }
+    }
+
+    @GetMapping("/common")
+    public ResponseEntity<Object> getCommonFilms(@RequestParam("userId") int userId,
+                                                 @RequestParam("friendId") int friendId) {
+        try {
+            List<Film> films = service.getCommonFilms(userId, friendId);
+
+            for (Film film : films) {
+                film.setGenres(service.findGenresForFilm(film.getId()));
+                film.setDirectors(service.findDirectorsForFilm(film.getId()));
+            }
+
             return ResponseEntity.ok(films.stream()
                     .map(filmMapper::map)
                     .toList());

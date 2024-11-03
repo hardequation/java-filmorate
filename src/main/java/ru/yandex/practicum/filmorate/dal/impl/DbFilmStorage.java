@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,6 +8,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -23,22 +24,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.model.enums.EventType.LIKE;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.REMOVE;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
 
 @Repository
-@Qualifier("dbFilmStorage")
+@RequiredArgsConstructor
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final FilmRowMapper filmRowMapper;
 
-    @Autowired
-    public DbFilmStorage(JdbcTemplate jdbcTemplate,
-                         FilmRowMapper filmRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.filmRowMapper = filmRowMapper;
-    }
+    private final UserStorage userStorage;
 
     @Override
     public List<Film> findAllFilms() {
@@ -73,7 +72,7 @@ public class DbFilmStorage implements FilmStorage {
                 return ps;
             }, keyHolder);
         } catch (DataIntegrityViolationException e) {
-            throw new ValidationException("Rating with id " + film.getMpa().getId() + " isn't found");
+            throw new ValidationException(e.getMessage());
         }
 
         int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
@@ -141,6 +140,7 @@ public class DbFilmStorage implements FilmStorage {
         String sql = "INSERT INTO film_likes (film_id, liked_user_id) VALUES (?, ?)";
 
         jdbcTemplate.update(sql, filmId, userId);
+        userStorage.addFeed(filmId, userId, LIKE, ADD);
     }
 
     @Override
@@ -148,6 +148,7 @@ public class DbFilmStorage implements FilmStorage {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND liked_user_id = ?";
 
         jdbcTemplate.update(sql, filmId, userId);
+        userStorage.addFeed(filmId, userId, LIKE, REMOVE);
     }
 
     @Override
@@ -187,6 +188,29 @@ public class DbFilmStorage implements FilmStorage {
                 "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
                 "ORDER BY " + sortParam.getSortParam();
         return jdbcTemplate.query(filmsSql, filmRowMapper, directorId);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        String filmsSql = "SELECT " +
+                "f.film_id AS film_id, " +
+                "f.name AS film_name, " +
+                "f.description AS description, " +
+                "f.release_date AS release_date, " +
+                "f.duration AS duration, " +
+                "r.rating_id AS rating_id, " +
+                "r.rating_name AS rating_name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
+                "WHERE f.film_id IN (SELECT fl2.film_id " +
+                "FROM film_likes fl " +
+                "JOIN film_likes fl2 ON fl.film_id = fl2.film_id " +
+                "WHERE fl.liked_user_id = ? " +
+                "AND fl2.liked_user_id = ?) " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
+                "ORDER BY COUNT(fl.LIKED_USER_ID) DESC ";
+        return jdbcTemplate.query(filmsSql, filmRowMapper, userId, friendId);
     }
 
     @Override
@@ -319,5 +343,53 @@ public class DbFilmStorage implements FilmStorage {
     public List<Integer> getLikesByFilmId(Integer filmId) {
         String sqlQuery = "SELECT liked_user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("liked_user_id"), filmId);
+    }
+
+    @Override
+    public List<Film> getFilmRecommendationsForUser(int userId) {
+        String sql = "SELECT DISTINCT f.film_id AS film_id, " +
+                "                f.name AS film_name, " +
+                "                f.description AS description, " +
+                "                f.release_date AS release_date, " +
+                "                f.duration AS duration, " +
+                "                r.rating_id AS rating_id, " +
+                "                r.rating_name AS rating_name " +
+                "FROM film_likes fl2 " +
+                "JOIN ( " +
+                "    SELECT fl1.liked_user_id AS common_user_id, " +
+                "           COUNT(*) AS common_likes_cnt " +
+                "    FROM film_likes fl1 " +
+                "    JOIN ( " +
+                "        SELECT DISTINCT film_id " +
+                "        FROM film_likes " +
+                "        WHERE liked_user_id = ? " +
+                "    ) AS ul ON fl1.film_id = ul.film_id " +
+                "    WHERE fl1.liked_user_id != ? " +
+                "    GROUP BY fl1.liked_user_id " +
+                "    HAVING COUNT(*) = ( " +
+                "        SELECT MAX(common_likes_cnt) " +
+                "        FROM ( " +
+                "            SELECT COUNT(*) AS common_likes_cnt " +
+                "            FROM film_likes fl1 " +
+                "            JOIN ( " +
+                "                SELECT DISTINCT film_id " +
+                "                FROM film_likes " +
+                "                WHERE liked_user_id = ? " +
+                "            ) AS ul ON fl1.film_id = ul.film_id " +
+                "            WHERE fl1.liked_user_id != ? " +
+                "            GROUP BY fl1.liked_user_id " +
+                "        ) AS common_likes " +
+                "    ) " +
+                ") AS tcu ON fl2.liked_user_id = tcu.common_user_id " +
+                "JOIN films f ON fl2.film_id = f.film_id " +
+                "JOIN ratings r ON f.mpa_rating_id = r.rating_id " +
+                "WHERE fl2.film_id NOT IN ( " +
+                "    SELECT film_id " +
+                "    FROM film_likes " +
+                "    WHERE liked_user_id = ? " +
+                ");";
+
+
+        return jdbcTemplate.query(sql, filmRowMapper, userId, userId, userId, userId, userId);
     }
 }
