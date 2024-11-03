@@ -73,7 +73,7 @@ public class DbFilmStorage implements FilmStorage {
                 return ps;
             }, keyHolder);
         } catch (DataIntegrityViolationException e) {
-            throw new ValidationException("Rating with id " + film.getMpa().getId() + " isn't found");
+            throw new ValidationException(e.getMessage());
         }
 
         int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();

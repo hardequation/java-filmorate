@@ -69,7 +69,7 @@ class DbUserStorageIntegrationTest {
 
         storage.removeUser(id);
 
-        assertEquals(Optional.empty(),  storage.findById(id));
+        assertEquals(Optional.empty(), storage.findById(id));
     }
 
     @Test

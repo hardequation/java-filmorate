@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -22,18 +21,12 @@ import java.util.Optional;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Repository
-@Qualifier("dbUserStorage")
+@RequiredArgsConstructor
 public class DbUserStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final UserRowMapper userRowMapper;
-
-    @Autowired
-    public DbUserStorage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.userRowMapper = userRowMapper;
-    }
 
     @Override
     public List<User> findAll() {
