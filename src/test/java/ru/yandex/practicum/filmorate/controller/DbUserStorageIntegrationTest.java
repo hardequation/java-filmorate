@@ -124,8 +124,8 @@ class DbUserStorageIntegrationTest {
 
     @Test
     void shouldGetFeedByUserId() {
-        storage.create(user);
-        storage.create(user2);
+        storage.add(user);
+        storage.add(user2);
         storage.addFriendship(user.getId(), user2.getId());
         storage.addFeed(1, 2, EventType.REVIEW, Operation.ADD);
 
