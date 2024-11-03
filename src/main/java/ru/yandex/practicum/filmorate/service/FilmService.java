@@ -145,16 +145,17 @@ public class FilmService {
     }
 
     public List<Film> searchFilms(String query, List<String> by) {
+        List<Film> foundedFilms;
         if (by == null || by.isEmpty()) {
             throw new ValidationException("Передано некорректное число параметров");
         } else {
-            if (by.size() == 2) {
-                return filmStorage.searchFilmsByTitleAndDirector(query);
+            if (by.size() == 2 && by.contains("title") && by.contains("director")) {
+                foundedFilms = filmStorage.searchFilmsByTitleAndDirector(query);
             } else if (by.size() == 1) {
-                if (by.getFirst().equals("title")) {
-                    return filmStorage.searchFilmsByTitle(query);
-                } else if (by.getFirst().equals("director")) {
-                    return filmStorage.searchFilmsByDirector(query);
+                if (by.getFirst().equalsIgnoreCase("title")) {
+                    foundedFilms = filmStorage.searchFilmsByTitle(query);
+                } else if (by.getFirst().equalsIgnoreCase("director")) {
+                    foundedFilms = filmStorage.searchFilmsByDirector(query);
                 } else {
                     throw new NotFoundException("Неверно указан параметр поиска");
                 }
@@ -162,6 +163,11 @@ public class FilmService {
                 throw new ValidationException("Передано некорректное число параметров");
             }
         }
+        for (Film film : foundedFilms) {
+            film.setGenres(findGenresForFilm(film.getId()));
+            film.setDirectors(findDirectorsForFilm(film.getId()));
+        }
+        return foundedFilms;
     }
     public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
         return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.model.FilmSortParam.POPULAR_FILMS_BY_LIKES;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
 
 @Repository
@@ -198,34 +199,61 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> searchFilmsByTitle(String query) {
-        String sqlQuery = "SELECT f.name FROM films AS f WHERE f.name LIKE '" + query + "%'" +
-                "JOIN film_likes AS fl ON fl.id = f.id" +
-                "ORDER BY fl.COUNT(*)";
-        return jdbcTemplate.query(sqlQuery, filmRowMapper);
+        String title = "%" + query + "%";
+        String sqlQuery = "SELECT f.film_id AS film_id, f.name AS film_name, f.description AS description, " +
+                "f.release_date AS release_date, f.duration AS duration, " +
+                "r.rating_id AS rating_id, r.rating_name AS rating_name, " +
+                "g.genre AS genre, g.genre_id AS genre_id " +
+                "FROM films AS f " +
+                "LEFT JOIN films_genres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres g ON g.genre_id = fg.genre_id " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
+                "LEFT JOIN films_directors fd ON f.film_id = fd.film_id " +
+                "WHERE f.name LIKE ? " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "r.rating_id, r.rating_name, g.genre " +
+                "ORDER BY COUNT(fl.film_id) DESC;";
+        return jdbcTemplate.query(sqlQuery, filmRowMapper, title);
     }
 
     @Override
     public List<Film> searchFilmsByDirector(String query) {
-        String sqlQuery = "SELECT DISTINCT f.id, f.name " +
+        String directorName = "%" + query + "%";
+        String sqlQuery = "SELECT f.film_id AS film_id, f.name AS film_name, f.description AS description, " +
+                "f.release_date AS release_date, f.duration AS duration, " +
+                "r.rating_id AS rating_id, r.rating_name AS rating_name, " +
+                "d.director_name AS director_name " +
                 "FROM films AS f " +
-                "JOIN film_likes AS fl ON fl.film_id = f.id " +
-                "JOIN films_directors AS fd ON fd.film_id = f.id " +
-                "JOIN directors AS d ON d.director_id = fd.director_id " +
-                "WHERE d.name LIKE '" + query + "%'" +
-                "ORDER BY COUNT(fl.id) DESC";
-        return jdbcTemplate.query(sqlQuery, filmRowMapper);
+                "LEFT JOIN films_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
+                "WHERE d.director_name LIKE ? " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "r.rating_id, r.rating_name, d.director_name " +
+                "ORDER BY COUNT(fl.film_id) DESC;";
+        return jdbcTemplate.query(sqlQuery, filmRowMapper, directorName);
     }
+
 
     @Override
     public List<Film> searchFilmsByTitleAndDirector(String query) {
-        String sqlQuery = "SELECT DISTINCT f.id, f.name " +
+        String params = "%" + query + "%";
+        String sqlQuery = "SELECT f.film_id AS film_id, f.name AS film_name, f.description AS description, " +
+                "f.release_date AS release_date, f.duration AS duration, " +
+                "r.rating_id AS rating_id, r.rating_name AS rating_name, " +
+                "d.director_name AS director_name " +
                 "FROM films AS f " +
-                "JOIN film_likes AS fl ON fl.film_id = f.id " +
-                "JOIN films_directors AS fd ON fd.film_id = f.id " +
-                "JOIN directors AS d ON d.director_id = fd.director_id " +
-                "WHERE d.name LIKE '" + query + "%' or f.name LIKE '" + query + "%'" +
-                "ORDER BY COUNT(fl.id) DESC";
-        return jdbcTemplate.query(sqlQuery, filmRowMapper);
+                "LEFT JOIN films_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
+                "WHERE (d.director_name LIKE ? OR f.name LIKE ?) " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "r.rating_id, r.rating_name, d.director_name " +
+                "ORDER BY COUNT(fl.film_id) DESC";
+        return jdbcTemplate.query(sqlQuery, filmRowMapper, params, params);
     }
 
     public List<Integer> getLikesByFilmId(Integer filmId) {
