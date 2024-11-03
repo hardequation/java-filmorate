@@ -1,31 +1,21 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dal.impl.DbDirectorStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
-import ru.yandex.practicum.filmorate.dal.impl.DbGenreStorage;
-import ru.yandex.practicum.filmorate.dal.impl.DbRatingStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.RatingRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmSortParam;
-import ru.yandex.practicum.filmorate.model.MpaRating;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -34,25 +24,23 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-@Slf4j
-@JdbcTest
-@Import({DbFilmStorage.class, DbGenreStorage.class, DbRatingStorage.class, DbDirectorStorage.class,
-        FilmRowMapper.class, GenreRowMapper.class, RatingRowMapper.class, DirectorRowMapper.class})
+@SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class DbFilmStorageIntegrationTest {
 
     @Autowired
-    private final JdbcTemplate template;
+    private JdbcTemplate template;
 
+    @Autowired
     private DbFilmStorage filmStorage;
 
+    @Autowired
     private DbUserStorage userStorage;
 
+    @Autowired
     private DbDirectorStorage directorStorage;
 
     private Film film = null;
@@ -64,7 +52,7 @@ class DbFilmStorageIntegrationTest {
     void setUp() {
         FilmRowMapper filmRowMapper = new FilmRowMapper();
         UserRowMapper userRowMapper = new UserRowMapper();
-        filmStorage = new DbFilmStorage(template, filmRowMapper);
+        filmStorage = new DbFilmStorage(template, filmRowMapper, userStorage);
         userStorage = new DbUserStorage(template, userRowMapper);
         directorStorage = new DbDirectorStorage(template, directorRowMapper);
 

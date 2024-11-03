@@ -84,4 +84,14 @@ CREATE TABLE IF NOT EXISTS review_likes (
     CONSTRAINT fk_review_id FOREIGN KEY (review_id) REFERENCES reviews (review_id) ON DELETE CASCADE,
     CONSTRAINT fk_user_id3 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
     PRIMARY KEY (review_id, user_id)
-)
+);
+
+CREATE TABLE IF NOT EXISTS feed (
+    event_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    entity_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    time_stamp TIMESTAMP NOT NULL,
+    event_type VARCHAR(255) NOT NULL,
+    operation VARCHAR(255) NOT NULL,
+    CONSTRAINT feed_users_id_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+);

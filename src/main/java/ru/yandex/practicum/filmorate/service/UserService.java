@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -90,4 +91,8 @@ public class UserService {
         }
     }
 
+    public List<Feed> getFeedByUserId(Integer id) {
+        getUser(id);
+        return userStorage.getFeedByUserId(id);
+    }
 }

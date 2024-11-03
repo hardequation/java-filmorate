@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
 import ru.yandex.practicum.filmorate.controller.mappers.UserMapper;
 import ru.yandex.practicum.filmorate.dto.create.CreateUserDto;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -100,4 +101,8 @@ public class UserController {
         return recommendations.stream().map(filmMapper::map).toList();
     }
 
+    @GetMapping("/{id}/feed")
+    public List<Feed> getFeed(@PathVariable Integer id) {
+        return userService.getFeedByUserId(id);
+    }
 }

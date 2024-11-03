@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.ReviewStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.model.enums.EventType.REVIEW;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.*;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.REVIEW_NOT_FOUND;
 
 @Repository
@@ -28,6 +31,8 @@ public class DbReviewStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
     private final ReviewRowMapper rowMapper;
+
+    private final UserStorage userStorage;
 
     @Override
     public Review add(Review review) {
@@ -53,6 +58,7 @@ public class DbReviewStorage implements ReviewStorage {
 
         int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
         review.setReviewId(generatedId);
+        userStorage.addFeed(review.getReviewId(), review.getUserId(), REVIEW, ADD);
 
         return review;
     }
@@ -71,14 +77,21 @@ public class DbReviewStorage implements ReviewStorage {
         if (rowsAffected == 0) {
             throw new NotFoundException(REVIEW_NOT_FOUND + newReview.getReviewId());
         }
+        userStorage.addFeed(newReview.getReviewId(), newReview.getUserId(), REVIEW, UPDATE);
         return newReview;
     }
 
     @Override
     public void remove(int id) {
-        String sql = "DELETE FROM reviews WHERE review_id = ?";
+        Optional<Review> review = findById(id);
+        if (review.isPresent()) {
+            Integer userId = review.get().getUserId();
+            String sql = "DELETE FROM reviews WHERE review_id = ?";
 
-        jdbcTemplate.update(sql, id);
+            jdbcTemplate.update(sql, id);
+
+            userStorage.addFeed(id, userId, REVIEW, REMOVE);
+        }
     }
 
     @Override

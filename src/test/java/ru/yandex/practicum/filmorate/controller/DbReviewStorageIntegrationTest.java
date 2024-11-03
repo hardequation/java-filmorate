@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
@@ -28,25 +27,23 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-@JdbcTest
+@SpringBootTest
 @Import({DbReviewStorage.class, ReviewRowMapper.class})
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class DbReviewStorageIntegrationTest {
 
     @Autowired
-    private final JdbcTemplate template;
+    private JdbcTemplate template;
 
+    @Autowired
     private DbReviewStorage reviewStorage;
 
+    @Autowired
     private DbUserStorage userStorage;
 
+    @Autowired
     private DbFilmStorage filmStorage;
 
     private Film film;
@@ -59,9 +56,9 @@ class DbReviewStorageIntegrationTest {
         ReviewRowMapper rowMapper = new ReviewRowMapper();
         FilmRowMapper filmRowMapper = new FilmRowMapper();
         UserRowMapper userRowMapper = new UserRowMapper();
-        reviewStorage = new DbReviewStorage(template, rowMapper);
-        filmStorage = new DbFilmStorage(template, filmRowMapper);
         userStorage = new DbUserStorage(template, userRowMapper);
+        reviewStorage = new DbReviewStorage(template, rowMapper, userStorage);
+        filmStorage = new DbFilmStorage(template, filmRowMapper, userStorage);
 
         film = Film.builder()
                 .name("Name")
