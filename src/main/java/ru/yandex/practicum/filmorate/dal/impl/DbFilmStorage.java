@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -23,21 +23,26 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.model.enums.EventType.LIKE;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.REMOVE;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
 
 @Repository
-@Qualifier("dbFilmStorage")
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final FilmRowMapper filmRowMapper;
 
+    private final UserStorage userStorage;
+
     @Autowired
     public DbFilmStorage(JdbcTemplate jdbcTemplate,
-                         FilmRowMapper filmRowMapper) {
+                         FilmRowMapper filmRowMapper, UserStorage userStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.filmRowMapper = filmRowMapper;
+        this.userStorage = userStorage;
     }
 
     @Override
@@ -141,6 +146,7 @@ public class DbFilmStorage implements FilmStorage {
         String sql = "INSERT INTO film_likes (film_id, liked_user_id) VALUES (?, ?)";
 
         jdbcTemplate.update(sql, filmId, userId);
+        userStorage.addFeed(filmId, userId, LIKE, ADD);
     }
 
     @Override
@@ -148,6 +154,7 @@ public class DbFilmStorage implements FilmStorage {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND liked_user_id = ?";
 
         jdbcTemplate.update(sql, filmId, userId);
+        userStorage.addFeed(filmId, userId, LIKE, REMOVE);
     }
 
     @Override
