@@ -86,7 +86,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void addRightReview() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
 
         Review review = Review.builder()
                 .filmId(createdFilm.getId())
@@ -107,7 +107,7 @@ class DbReviewStorageIntegrationTest {
     @DisplayName("Film id does not exist")
     void addWithWrongFilm() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
 
         Review review = Review.builder()
                 .filmId(createdFilm.getId() + 1)
@@ -124,7 +124,7 @@ class DbReviewStorageIntegrationTest {
     @DisplayName("User id does not exist")
     void addWithUserFilm() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
 
         Review review = Review.builder()
                 .filmId(createdFilm.getId())
@@ -141,7 +141,7 @@ class DbReviewStorageIntegrationTest {
     @DisplayName("Successful update")
     void updateReview() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -163,7 +163,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void removeReviewSuccessfully() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -183,7 +183,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void removeNonExistingReview() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         int nonExistingReviewID = 999;
         reviewStorage.add(Review.builder()
                 .reviewId(nonExistingReviewID)
@@ -199,7 +199,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void removeAllReviews() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -224,7 +224,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testfindByIdSuccessful() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -241,7 +241,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testfindByNonExistingId() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -258,7 +258,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testFindByFilmId() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review1 = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -289,7 +289,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testAddLikeAndDislikeAdd() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
 
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
@@ -299,14 +299,14 @@ class DbReviewStorageIntegrationTest {
                 .build());
         reviewStorage.add(review);
 
-        User createdUser1 = userStorage.create(
+        User createdUser1 = userStorage.add(
                 User.builder()
                         .name("Name")
                         .login("Login1")
                         .email("a1@abc.com")
                         .birthday(LocalDate.of(1990, 12, 14))
                         .build());
-        User createdUser2 = userStorage.create(
+        User createdUser2 = userStorage.add(
                 User.builder()
                         .name("Name")
                         .login("Login2")
@@ -324,7 +324,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testAddLikeNonExistingReview() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -342,7 +342,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testAddLikeReviewWithNonExistingUser() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -360,7 +360,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testAddDislikeNonExistingReview() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -378,7 +378,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testAddDislikeNonExistingUser() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())
@@ -396,7 +396,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testRemoveLikeAndDislike() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
 
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
@@ -405,7 +405,7 @@ class DbReviewStorageIntegrationTest {
                 .useful(0)
                 .build());
 
-        User createdUser1 = userStorage.create(
+        User createdUser1 = userStorage.add(
                 User.builder()
                         .name("Name")
                         .login("Login1")
@@ -413,7 +413,7 @@ class DbReviewStorageIntegrationTest {
                         .birthday(LocalDate.of(1990, 12, 14))
                         .build());
 
-        User createdUser2 = userStorage.create(
+        User createdUser2 = userStorage.add(
                 User.builder()
                         .name("Name")
                         .login("Login2")
@@ -434,7 +434,7 @@ class DbReviewStorageIntegrationTest {
     @Test
     void testWrongRemoveLikeAndDislike() {
         Film createdFilm = filmStorage.add(film);
-        User createdUser = userStorage.create(user);
+        User createdUser = userStorage.add(user);
         Review review = reviewStorage.add(Review.builder()
                 .filmId(createdFilm.getId())
                 .userId(createdUser.getId())

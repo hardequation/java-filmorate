@@ -39,7 +39,7 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public User create(User user) {
+    public User add(User user) {
         String sql = "INSERT INTO users (name, login, email, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 

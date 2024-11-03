@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -24,17 +24,12 @@ import java.util.Optional;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.DIRECTOR_NOT_FOUND;
 
 @Repository
+@RequiredArgsConstructor
 public class DbDirectorStorage implements DirectorStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final DirectorRowMapper directorRowMapper;
-
-    @Autowired
-    public DbDirectorStorage(final JdbcTemplate jdbcTemplate, final DirectorRowMapper directorRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.directorRowMapper = directorRowMapper;
-    }
 
     @Override
     public List<Director> findAllDirectors() {

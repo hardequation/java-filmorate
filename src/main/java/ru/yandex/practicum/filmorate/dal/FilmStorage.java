@@ -29,5 +29,7 @@ public interface FilmStorage {
 
     List<Film> getCommonFilms(int userId, int friendId);
 
+    List<Film> getFilmRecommendationsForUser(int userId);
+
     void removeAll();
 }

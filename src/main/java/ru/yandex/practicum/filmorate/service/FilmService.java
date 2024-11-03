@@ -2,26 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.DirectorStorage;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.dal.GenreStorage;
-import ru.yandex.practicum.filmorate.dal.RatingStorage;
-import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmSortParam;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.DIRECTOR_NOT_FOUND;
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.GENRE_NOT_FOUND;
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.RATING_NOT_FOUND;
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.*;
 
 @Service
 public class FilmService {
@@ -156,5 +144,9 @@ public class FilmService {
 
     public List<Film> getCommonFilms(int userId, int friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    public List<Film> getFilmRecommendationsForUser(int userId) {
+        return filmStorage.getFilmRecommendationsForUser(userId);
     }
 }
