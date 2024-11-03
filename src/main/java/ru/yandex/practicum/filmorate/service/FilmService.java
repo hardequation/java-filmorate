@@ -162,6 +162,7 @@ public class FilmService {
                 throw new ValidationException("Передано некорректное число параметров");
             }
         }
+    }
     public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
         return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);
     }
