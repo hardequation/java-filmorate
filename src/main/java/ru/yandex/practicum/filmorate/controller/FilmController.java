@@ -102,11 +102,11 @@ public class FilmController {
         List<Film> films;
         if (genreId == null && year == null) {
             films = service.getMostPopularFilms(count);
-        } else if (genreId != null && year != null) {
-            films = service.getPopularFilmsSortedByGenreAndYear(count, genreId, year);
         } else if (genreId != null && year == null) {
             films = service.getPopularFilmsSortedByGenre(count, genreId);
-        } else {
+        } else if (genreId != null) {
+            films = service.getPopularFilmsSortedByGenreAndYear(count, genreId, year);
+        }  else {
             films = service.getPopularFilmsSortedByYear(count, year);
         }
         for (Film film : films) {
@@ -153,7 +153,7 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> seacrhFilms(@RequestParam() String query, @RequestParam() List<String> by) {
+    public List<Film> searchFilms(@RequestParam() String query, @RequestParam() List<String> by) {
         return service.searchFilms(query, by);
     }
 }
