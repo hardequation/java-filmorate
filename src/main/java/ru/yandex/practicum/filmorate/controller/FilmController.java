@@ -107,7 +107,7 @@ public class FilmController {
             films = service.getPopularFilmsSortedByGenre(count, genreId);
         } else if (genreId != null) {
             films = service.getPopularFilmsSortedByGenreAndYear(count, genreId, year);
-        }  else {
+        } else {
             films = service.getPopularFilmsSortedByYear(count, year);
         }
         for (Film film : films) {

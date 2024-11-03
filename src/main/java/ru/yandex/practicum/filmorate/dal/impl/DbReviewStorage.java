@@ -21,7 +21,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static ru.yandex.practicum.filmorate.model.enums.EventType.REVIEW;
-import static ru.yandex.practicum.filmorate.model.enums.Operation.*;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.REMOVE;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.UPDATE;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.REVIEW_NOT_FOUND;
 
 @Repository
