@@ -316,6 +316,80 @@ class DbFilmStorageIntegrationTest {
 
         assertEquals(film1.getId(), filmsByDirectorSortedByYear.getFirst().getId());
         assertEquals(film3.getId(), filmsByDirectorSortedByLikes.getFirst().getId());
+    }
 
+    @Test
+    @DisplayName("Получение общих фильмов")
+    void testCommonFilms() {
+        Film film1 = filmStorage.add(Film.builder()
+                .name("Name1")
+                .description("Login1")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
+                .build());
+        Film film2 = filmStorage.add(Film.builder()
+                .name("Name2")
+                .description("Login2")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
+                .build());
+        Film film3 = filmStorage.add(Film.builder()
+                .name("Name3")
+                .description("Login3")
+                .duration(150L)
+                .mpa(MpaRating.builder().id(2).name("PG").build())
+                .releaseDate(LocalDate.of(1980, 10, 1))
+                .genres(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
+                .build());
+        User user1 = userStorage.create(
+                User.builder()
+                        .name("Name1")
+                        .login("Loin1")
+                        .email("a1@g.com")
+                        .birthday(LocalDate.of(1980, 10, 30))
+                        .build());
+        User user2 = userStorage.create(
+                User.builder()
+                        .name("Name2")
+                        .login("Loin2")
+                        .email("a2@g.com")
+                        .birthday(LocalDate.of(1980, 10, 29))
+                        .build());
+        User user3 = userStorage.create(
+                User.builder()
+                        .name("Name3")
+                        .login("Login3")
+                        .email("a3@g.com")
+                        .birthday(LocalDate.of(1980, 10, 27))
+                        .build());
+        User user4 = userStorage.create(
+                User.builder()
+                        .name("Name4")
+                        .login("Login4")
+                        .email("a4@g.com")
+                        .birthday(LocalDate.of(1980, 10, 27))
+                        .build());
+
+        filmStorage.addLike(film1.getId(), user1.getId());
+        filmStorage.addLike(film2.getId(), user1.getId());
+        filmStorage.addLike(film3.getId(), user1.getId());
+        filmStorage.addLike(film2.getId(), user2.getId());
+        filmStorage.addLike(film3.getId(), user2.getId());
+        filmStorage.addLike(film3.getId(), user3.getId());
+        filmStorage.addLike(film1.getId(), user4.getId());
+
+        List<Film> commonFilms = filmStorage.getCommonFilms(user1.getId(), user2.getId());
+        List<Film> commonFilms1 = filmStorage.getCommonFilms(user2.getId(), user4.getId());
+
+        assertEquals(film3.getId(), commonFilms.getFirst().getId());
+        assertEquals(2, commonFilms.size());
+        assertEquals(0, commonFilms1.size());
     }
 }
