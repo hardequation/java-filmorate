@@ -120,7 +120,7 @@ public class FilmService {
             } else if (by.size() == 1) {
                 if (by.getFirst().equals("title")) {
                     return filmStorage.searchFilmsByTitle(query);
-                } else if(by.getFirst().equals("director")) {
+                } else if (by.getFirst().equals("director")) {
                     return filmStorage.searchFilmsByDirector(query);
                 } else {
                     throw new NotFoundException("Неверно указан параметр поиска");
