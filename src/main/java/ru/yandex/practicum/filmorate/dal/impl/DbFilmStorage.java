@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,19 +25,12 @@ import java.util.Optional;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
 
 @Repository
-@Qualifier("dbFilmStorage")
+@RequiredArgsConstructor
 public class DbFilmStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final FilmRowMapper filmRowMapper;
-
-    @Autowired
-    public DbFilmStorage(JdbcTemplate jdbcTemplate,
-                         FilmRowMapper filmRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.filmRowMapper = filmRowMapper;
-    }
 
     @Override
     public List<Film> findAllFilms() {
@@ -199,5 +191,53 @@ public class DbFilmStorage implements FilmStorage {
     public List<Integer> getLikesByFilmId(Integer filmId) {
         String sqlQuery = "SELECT liked_user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("liked_user_id"), filmId);
+    }
+
+    @Override
+    public List<Film> getFilmRecommendationsForUser(int userId) {
+        String sql = "SELECT DISTINCT f.film_id AS film_id, " +
+                "                f.name AS film_name, " +
+                "                f.description AS description, " +
+                "                f.release_date AS release_date, " +
+                "                f.duration AS duration, " +
+                "                r.rating_id AS rating_id, " +
+                "                r.rating_name AS rating_name " +
+                "FROM film_likes fl2 " +
+                "JOIN ( " +
+                "    SELECT fl1.liked_user_id AS common_user_id, " +
+                "           COUNT(*) AS common_likes_cnt " +
+                "    FROM film_likes fl1 " +
+                "    JOIN ( " +
+                "        SELECT DISTINCT film_id " +
+                "        FROM film_likes " +
+                "        WHERE liked_user_id = ? " +
+                "    ) AS ul ON fl1.film_id = ul.film_id " +
+                "    WHERE fl1.liked_user_id != ? " +
+                "    GROUP BY fl1.liked_user_id " +
+                "    HAVING COUNT(*) = ( " +
+                "        SELECT MAX(common_likes_cnt) " +
+                "        FROM ( " +
+                "            SELECT COUNT(*) AS common_likes_cnt " +
+                "            FROM film_likes fl1 " +
+                "            JOIN ( " +
+                "                SELECT DISTINCT film_id " +
+                "                FROM film_likes " +
+                "                WHERE liked_user_id = ? " +
+                "            ) AS ul ON fl1.film_id = ul.film_id " +
+                "            WHERE fl1.liked_user_id != ? " +
+                "            GROUP BY fl1.liked_user_id " +
+                "        ) AS common_likes " +
+                "    ) " +
+                ") AS tcu ON fl2.liked_user_id = tcu.common_user_id " +
+                "JOIN films f ON fl2.film_id = f.film_id " +
+                "JOIN ratings r ON f.mpa_rating_id = r.rating_id " +
+                "WHERE fl2.film_id NOT IN ( " +
+                "    SELECT film_id " +
+                "    FROM film_likes " +
+                "    WHERE liked_user_id = ? " +
+                ");";
+
+
+        return jdbcTemplate.query(sql, filmRowMapper, userId, userId, userId, userId, userId);
     }
 }

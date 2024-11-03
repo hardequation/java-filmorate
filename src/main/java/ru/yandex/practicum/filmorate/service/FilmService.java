@@ -141,4 +141,8 @@ public class FilmService {
     public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
         return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);
     }
+
+    public List<Film> getFilmRecommendationsForUser(int userId) {
+        return filmStorage.getFilmRecommendationsForUser(userId);
+    }
 }
