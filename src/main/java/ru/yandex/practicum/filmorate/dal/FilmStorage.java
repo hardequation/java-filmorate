@@ -27,6 +27,8 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam);
 
+    List<Film> getCommonFilms(int userId, int friendId);
+
     List<Film> getFilmRecommendationsForUser(int userId);
 
     void removeAll();

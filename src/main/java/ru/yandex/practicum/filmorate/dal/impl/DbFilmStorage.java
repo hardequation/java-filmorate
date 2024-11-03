@@ -65,7 +65,7 @@ public class DbFilmStorage implements FilmStorage {
                 return ps;
             }, keyHolder);
         } catch (DataIntegrityViolationException e) {
-            throw new ValidationException("Rating with id " + film.getMpa().getId() + " isn't found");
+            throw new ValidationException(e.getMessage());
         }
 
         int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
@@ -180,6 +180,29 @@ public class DbFilmStorage implements FilmStorage {
                 "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
                 "ORDER BY " + sortParam.getSortParam();
         return jdbcTemplate.query(filmsSql, filmRowMapper, directorId);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        String filmsSql = "SELECT " +
+                "f.film_id AS film_id, " +
+                "f.name AS film_name, " +
+                "f.description AS description, " +
+                "f.release_date AS release_date, " +
+                "f.duration AS duration, " +
+                "r.rating_id AS rating_id, " +
+                "r.rating_name AS rating_name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
+                "WHERE f.film_id IN (SELECT fl2.film_id " +
+                "FROM film_likes fl " +
+                "JOIN film_likes fl2 ON fl.film_id = fl2.film_id " +
+                "WHERE fl.liked_user_id = ? " +
+                "AND fl2.liked_user_id = ?) " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
+                "ORDER BY COUNT(fl.LIKED_USER_ID) DESC ";
+        return jdbcTemplate.query(filmsSql, filmRowMapper, userId, friendId);
     }
 
     @Override

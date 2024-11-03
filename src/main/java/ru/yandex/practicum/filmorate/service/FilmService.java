@@ -142,6 +142,10 @@ public class FilmService {
         return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);
     }
 
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     public List<Film> getFilmRecommendationsForUser(int userId) {
         return filmStorage.getFilmRecommendationsForUser(userId);
     }
