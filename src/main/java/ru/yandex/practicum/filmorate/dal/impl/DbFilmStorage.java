@@ -164,7 +164,7 @@ public class DbFilmStorage implements FilmStorage {
                 "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
                 "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
-                "ORDER BY COUNT(f.film_id) DESC " +
+                "ORDER BY COUNT(fl.film_id) DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(filmsSql, filmRowMapper, size);
     }

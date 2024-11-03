@@ -13,7 +13,7 @@ public interface GenreStorage {
 
     Optional<Genre> findGenreById(int id);
 
-    void addGenresOfFilm(Film film);
+    void updateGenresOfFilm(Film film);
 
     List<Genre> findGenresForFilm(int filmId);
 }

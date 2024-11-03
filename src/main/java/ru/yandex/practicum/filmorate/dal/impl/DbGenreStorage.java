@@ -48,9 +48,11 @@ public class DbGenreStorage implements GenreStorage {
     }
 
     @Override
-    public void addGenresOfFilm(Film film) {
-        String addFilmGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
+    public void updateGenresOfFilm(Film film) {
+        String removeFilmGenre = "DELETE FROM films_genres where film_id = ?";
+        jdbcTemplate.update(removeFilmGenre, film.getId());
 
+        String addFilmGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
         List<Genre> genres = film.getGenres().stream().toList();
         if (genres.isEmpty()) {
             return;
