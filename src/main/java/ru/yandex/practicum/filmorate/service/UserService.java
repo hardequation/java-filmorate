@@ -31,8 +31,11 @@ public class UserService {
 
     public User create(User user) {
         setName(user);
-        userStorage.add(user);
-        return user;
+        return userStorage.create(user);
+    }
+
+    public void removeUser(Integer id) {
+        userStorage.removeUser(id);
     }
 
     public User updateUser(User newUser) {

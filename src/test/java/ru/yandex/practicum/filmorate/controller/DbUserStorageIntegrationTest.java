@@ -55,15 +55,26 @@ class DbUserStorageIntegrationTest {
     void testAddUser() {
         assertTrue(storage.findAll().isEmpty());
 
-        User addedUser = storage.add(user);
+        User addedUser = storage.create(user);
 
         assertEquals(1, storage.findAll().size());
         assertEquals(user.getName(), addedUser.getName());
     }
 
     @Test
+    void testRemoveUser() {
+        User addedUser = storage.create(user);
+        int id = addedUser.getId();
+        assertFalse(storage.findById(id).isEmpty());
+
+        storage.removeUser(id);
+
+        assertEquals(Optional.empty(),  storage.findById(id));
+    }
+
+    @Test
     void testUpdateUser() {
-        storage.add(user);
+        storage.create(user);
 
         String newName = "NewName";
         user.setName(newName);
@@ -74,7 +85,7 @@ class DbUserStorageIntegrationTest {
 
     @Test
     void testContains() {
-        User addedUser = storage.add(user);
+        User addedUser = storage.create(user);
 
         assertTrue(storage.contains(addedUser.getId()));
         assertFalse(storage.contains(addedUser.getId() + 1));
@@ -82,7 +93,7 @@ class DbUserStorageIntegrationTest {
 
     @Test
     void testFindUserById() {
-        User addedUser = storage.add(user);
+        User addedUser = storage.create(user);
 
         Optional<User> userOptional = storage.findById(addedUser.getId());
 
@@ -95,7 +106,7 @@ class DbUserStorageIntegrationTest {
 
     @Test
     void testRemoveAll() {
-        storage.add(user);
+        storage.create(user);
         assertEquals(1, storage.findAll().size());
 
         storage.removeAll();

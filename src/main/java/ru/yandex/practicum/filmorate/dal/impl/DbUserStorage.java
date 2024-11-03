@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dal.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -40,7 +41,7 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public User add(User user) {
+    public User create(User user) {
         String sql = "INSERT INTO users (name, login, email, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -57,6 +58,12 @@ public class DbUserStorage implements UserStorage {
         user.setId(generatedId);
 
         return user;
+    }
+
+    @Override
+    public void removeUser(Integer id) {
+        String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
+        jdbcTemplate.update(deleteUserSql, id);
     }
 
     @Override
@@ -90,8 +97,8 @@ public class DbUserStorage implements UserStorage {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try {
             User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
-            return Optional.ofNullable(user);
-        } catch (Exception e) {
+            return Optional.of(user);
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
