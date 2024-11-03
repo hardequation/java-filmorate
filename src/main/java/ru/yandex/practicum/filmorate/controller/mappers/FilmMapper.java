@@ -11,9 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 public class FilmMapper {
 
     private final GenreMapper genreMapper;
-
     private final MpaRatingMapper ratingMapper;
-
     private final DirectorMapper directorMapper;
 
     public Film map(CreateFilmDto dto) {

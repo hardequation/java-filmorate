@@ -2,14 +2,27 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.*;
+import ru.yandex.practicum.filmorate.dal.DirectorStorage;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.GenreStorage;
+import ru.yandex.practicum.filmorate.dal.RatingStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortParam;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.utils.ErrorMessages.*;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.DIRECTOR_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.GENRE_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.RATING_NOT_FOUND;
+import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Service
 public class FilmService {
@@ -138,8 +151,46 @@ public class FilmService {
         return filmStorage.getMostPopularFilms(size);
     }
 
+    public List<Film> searchFilms(String query, List<String> by) {
+        List<Film> foundedFilms;
+        if (by == null || by.isEmpty()) {
+            throw new ValidationException("Передано некорректное число параметров");
+        } else {
+            if (by.size() == 2 && by.contains("title") && by.contains("director")) {
+                foundedFilms = filmStorage.searchFilmsByTitleAndDirector(query);
+            } else if (by.size() == 1) {
+                if (by.getFirst().equalsIgnoreCase("title")) {
+                    foundedFilms = filmStorage.searchFilmsByTitle(query);
+                } else if (by.getFirst().equalsIgnoreCase("director")) {
+                    foundedFilms = filmStorage.searchFilmsByDirector(query);
+                } else {
+                    throw new NotFoundException("Неверно указан параметр поиска");
+                }
+            } else {
+                throw new ValidationException("Передано некорректное число параметров");
+            }
+        }
+        for (Film film : foundedFilms) {
+            film.setGenres(findGenresForFilm(film.getId()));
+            film.setDirectors(findDirectorsForFilm(film.getId()));
+        }
+        return foundedFilms;
+    }
+
     public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
         return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);
+    }
+
+    public List<Film> getPopularFilmsSortedByGenreAndYear(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilmsSortedByGenreAndYear(count, genreId, year);
+    }
+
+    public List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId) {
+        return filmStorage.getPopularFilmsSortedByGenre(count, genreId);
+    }
+
+    public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year) {
+        return filmStorage.getPopularFilmsSortedByYear(count, year);
     }
 
     public List<Film> getCommonFilms(int userId, int friendId) {
