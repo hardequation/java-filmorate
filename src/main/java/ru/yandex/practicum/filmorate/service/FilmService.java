@@ -172,4 +172,16 @@ public class FilmService {
     public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
         return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);
     }
+
+    public List<Film> getPopularFilmsSortedByGenreAndYear(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilmsSortedByGenreAndYear(count, genreId, year);
+    }
+
+    public List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId) {
+        return filmStorage.getPopularFilmsSortedByGenre(count, genreId);
+    }
+
+    public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year) {
+        return filmStorage.getPopularFilmsSortedByYear(count, year);
+    }
 }

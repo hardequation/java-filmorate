@@ -34,4 +34,12 @@ public interface FilmStorage {
     List<Film> searchFilmsByTitle(String query);
 
     List<Film> searchFilmsByTitleAndDirector(String query);
+
+    List<Film> getPopularFilmsSortedByGenreAndYear(Integer count, Integer genreId, Integer year);
+
+    List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId);
+
+    List<Film> getPopularFilmsSortedByYear(Integer count, Integer year);
+
+
 }
