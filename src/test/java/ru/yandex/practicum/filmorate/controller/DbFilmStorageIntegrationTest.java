@@ -360,28 +360,28 @@ class DbFilmStorageIntegrationTest {
                 .genres(new LinkedHashSet<>())
                 .directors(new LinkedHashSet<>())
                 .build());
-        User user1 = userStorage.create(
+        User user1 = userStorage.add(
                 User.builder()
                         .name("Name1")
                         .login("Loin1")
                         .email("a1@g.com")
                         .birthday(LocalDate.of(1980, 10, 30))
                         .build());
-        User user2 = userStorage.create(
+        User user2 = userStorage.add(
                 User.builder()
                         .name("Name2")
                         .login("Loin2")
                         .email("a2@g.com")
                         .birthday(LocalDate.of(1980, 10, 29))
                         .build());
-        User user3 = userStorage.create(
+        User user3 = userStorage.add(
                 User.builder()
                         .name("Name3")
                         .login("Login3")
                         .email("a3@g.com")
                         .birthday(LocalDate.of(1980, 10, 27))
                         .build());
-        User user4 = userStorage.create(
+        User user4 = userStorage.add(
                 User.builder()
                         .name("Name4")
                         .login("Login4")
