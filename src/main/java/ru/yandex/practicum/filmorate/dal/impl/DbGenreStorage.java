@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -17,17 +17,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class DbGenreStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final GenreRowMapper genreRowMapper;
-
-    @Autowired
-    public DbGenreStorage(JdbcTemplate jdbcTemplate, GenreRowMapper genreRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.genreRowMapper = genreRowMapper;
-    }
 
     @Override
     public List<Genre> findAllGenres() {

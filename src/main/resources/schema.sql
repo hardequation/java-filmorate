@@ -65,3 +65,33 @@ CREATE TABLE IF NOT EXISTS films_directors (
     CONSTRAINT fk_director_id FOREIGN KEY (director_id) REFERENCES directors (director_id) ON DELETE CASCADE,
     PRIMARY KEY (film_id, director_id)
 );
+
+CREATE TABLE IF NOT EXISTS reviews (
+    review_id SERIAL PRIMARY KEY,
+    film_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    is_positive BOOLEAN NOT NULL,
+    useful INTEGER NOT NULL,
+    content VARCHAR(500),
+    CONSTRAINT fk_film_id4 FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_id2 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS review_likes (
+    review_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    is_like BOOLEAN NOT NULL,
+    CONSTRAINT fk_review_id FOREIGN KEY (review_id) REFERENCES reviews (review_id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_id3 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    PRIMARY KEY (review_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS feed (
+    event_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    entity_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    time_stamp TIMESTAMP NOT NULL,
+    event_type VARCHAR(255) NOT NULL,
+    operation VARCHAR(255) NOT NULL,
+    CONSTRAINT feed_users_id_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+);

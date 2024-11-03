@@ -27,6 +27,10 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam);
 
+    List<Film> getCommonFilms(int userId, int friendId);
+
+    List<Film> getFilmRecommendationsForUser(int userId);
+
     void removeAll();
 
     List<Film> searchFilmsByDirector(String query);
@@ -34,4 +38,12 @@ public interface FilmStorage {
     List<Film> searchFilmsByTitle(String query);
 
     List<Film> searchFilmsByTitleAndDirector(String query);
+
+    List<Film> getPopularFilmsSortedByGenreAndYear(Integer count, Integer genreId, Integer year);
+
+    List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId);
+
+    List<Film> getPopularFilmsSortedByYear(Integer count, Integer year);
+
+
 }

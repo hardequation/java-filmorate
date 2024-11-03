@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
 import ru.yandex.practicum.filmorate.controller.mappers.MpaRatingMapper;
-import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.create.CreateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -97,8 +97,19 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive int count) {
-        List<Film> films = service.getMostPopularFilms(count);
+    public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive Integer count,
+                                         @Positive @RequestParam(required = false) Integer genreId,
+                                         @Positive @RequestParam(required = false) Integer year) {
+        List<Film> films;
+        if (genreId == null && year == null) {
+            films = service.getMostPopularFilms(count);
+        } else if (genreId != null && year == null) {
+            films = service.getPopularFilmsSortedByGenre(count, genreId);
+        } else if (genreId != null) {
+            films = service.getPopularFilmsSortedByGenreAndYear(count, genreId, year);
+        } else {
+            films = service.getPopularFilmsSortedByYear(count, year);
+        }
         for (Film film : films) {
             film.setGenres(service.findGenresForFilm(film.getId()));
             film.setDirectors(service.findDirectorsForFilm(film.getId()));
@@ -122,10 +133,10 @@ public class FilmController {
                     break;
                 default:
                     Map<String, Object> errorResponse = new HashMap<>();
-                    errorResponse.put("error", "Invalid sortBy parameter: '" + sortBy + "'. Allowed values - year, likes");
+                    errorResponse.put("error", "Invalid sortBy parameter: '" + sortBy +
+                            "'. Allowed values - year, likes");
                     return ResponseEntity.badRequest().body(errorResponse);
             }
-
             for (Film film : films) {
                 film.setGenres(service.findGenresForFilm(film.getId()));
                 film.setDirectors(service.findDirectorsForFilm(film.getId()));
@@ -142,8 +153,31 @@ public class FilmController {
         }
     }
 
+    @GetMapping("/common")
+    public ResponseEntity<Object> getCommonFilms(@RequestParam("userId") int userId,
+                                                 @RequestParam("friendId") int friendId) {
+        try {
+            List<Film> films = service.getCommonFilms(userId, friendId);
+
+            for (Film film : films) {
+                film.setGenres(service.findGenresForFilm(film.getId()));
+                film.setDirectors(service.findDirectorsForFilm(film.getId()));
+            }
+
+            return ResponseEntity.ok(films.stream()
+                    .map(filmMapper::map)
+                    .toList());
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.internalServerError().body("Internal Server Error");
+        }
+    }
+
     @GetMapping("/search")
-    public List<Film> seacrhFilms(@RequestParam() String query, @RequestParam() List<String> by) {
+    public List<Film> searchFilms(@RequestParam() String query, @RequestParam() List<String> by) {
         return service.searchFilms(query, by);
     }
 }
