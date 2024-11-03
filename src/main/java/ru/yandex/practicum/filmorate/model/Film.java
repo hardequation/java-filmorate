@@ -28,4 +28,6 @@ public class Film {
 
     private LinkedHashSet<Genre> genres;
 
+    private LinkedHashSet<Director> directors;
+
 }

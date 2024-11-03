@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dal.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortParam;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -81,7 +83,7 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void remove(Integer filmId) {
+    public void removeFilm(Integer filmId) {
         String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
         jdbcTemplate.update(deleteFilmSql, filmId);
     }
@@ -122,16 +124,16 @@ public class DbFilmStorage implements FilmStorage {
                 "f.release_date as release_date, " +
                 "f.duration as duration, " +
                 "r.rating_id as rating_id, " +
-                "r.rating_name as rating, " +
+                "r.rating_name as rating " +
                 "FROM films f " +
                 "INNER JOIN ratings r ON f.mpa_rating_id = r.rating_id " +
                 "WHERE f.film_id = ?; ";
-        Film film = jdbcTemplate.queryForObject(sqlQuery, filmRowMapper, id);
-        if (film == null) {
+        try {
+            Film film = jdbcTemplate.queryForObject(sqlQuery, filmRowMapper, id);
+            return Optional.of(film);
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
-
-        return Optional.of(film);
     }
 
     @Override
@@ -157,19 +159,35 @@ public class DbFilmStorage implements FilmStorage {
                 "f.release_date AS release_date, " +
                 "f.duration AS duration, " +
                 "r.rating_id AS rating_id, " +
-                "r.rating_name AS rating_name, " +
-                "g.genre_id AS genre_id, " +
-                "g.genre AS genre_name " +
+                "r.rating_name AS rating_name " +
                 "FROM films AS f " +
-                "JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
-                "JOIN films_genres fg ON f.film_id = fg.film_id " +
-                "JOIN genres g ON fg.genre_id = g.genre_id " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name, g.genre_id, g.genre " +
-                "ORDER BY COUNT(fl.liked_user_id) DESC " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
+                "ORDER BY COUNT(f.film_id) DESC " +
                 "LIMIT ?";
 
         return jdbcTemplate.query(filmsSql, filmRowMapper, size);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
+        String filmsSql = "SELECT " +
+                "f.film_id AS film_id, " +
+                "f.name AS film_name, " +
+                "f.description AS description, " +
+                "f.release_date AS release_date, " +
+                "f.duration AS duration, " +
+                "r.rating_id AS rating_id, " +
+                "r.rating_name AS rating_name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
+                "LEFT JOIN films_directors fd on f.film_id = fd.film_id " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
+                "ORDER BY " + sortParam.getSortParam();
+        return jdbcTemplate.query(filmsSql, filmRowMapper, directorId);
     }
 
     @Override

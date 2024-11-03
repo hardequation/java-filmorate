@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +11,7 @@ public interface FilmStorage {
 
     Film add(Film film);
 
-    void remove(Integer filmId);
+    void removeFilm(Integer filmId);
 
     Film update(Film film);
 
@@ -23,6 +24,8 @@ public interface FilmStorage {
     void removeLike(int filmId, int userId);
 
     List<Film> getMostPopularFilms(int size);
+
+    List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam);
 
     void removeAll();
 
