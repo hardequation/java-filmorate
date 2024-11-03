@@ -31,14 +31,14 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public Review add(Review review) {
-        String addFilmsql = "INSERT INTO reviews (film_id, user_id, is_positive, useful, content) " +
+        String addFilmSql = "INSERT INTO reviews (film_id, user_id, is_positive, useful, content) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         try {
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(addFilmsql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(addFilmSql, Statement.RETURN_GENERATED_KEYS);
                 ps.setInt(1, review.getFilmId());
                 ps.setInt(2, review.getUserId());
                 ps.setBoolean(3, review.isPositive());
