@@ -141,4 +141,27 @@ public class FilmController {
             return ResponseEntity.internalServerError().body("Internal Server Error");
         }
     }
+
+    @GetMapping("/common")
+    public ResponseEntity<Object> getCommonFilms(@RequestParam("userId") int userId,
+                                                 @RequestParam("friendId") int friendId) {
+        try {
+            List<Film> films = service.getCommonFilms(userId, friendId);
+
+            for (Film film : films) {
+                film.setGenres(service.findGenresForFilm(film.getId()));
+                film.setDirectors(service.findDirectorsForFilm(film.getId()));
+            }
+
+            return ResponseEntity.ok(films.stream()
+                    .map(filmMapper::map)
+                    .toList());
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.internalServerError().body("Internal Server Error");
+        }
+    }
 }
