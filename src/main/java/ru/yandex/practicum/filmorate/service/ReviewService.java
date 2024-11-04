@@ -35,6 +35,7 @@ public class ReviewService {
     public Review findById(int id) {
         return reviewStorage.findById(id).orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND + id));
     }
+
     public List<Review> findByFilmId(int filmId, int size) {
         return reviewStorage.findByFilmId(filmId, size);
     }
