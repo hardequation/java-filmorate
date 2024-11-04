@@ -94,7 +94,7 @@ public class FilmService {
     }
 
     public void addDirectorsForFilm(Film film) {
-        directorStorage.addDirectorOfFilm(film);
+        directorStorage.updateDirectorOfFilm(film);
     }
 
     public Director createDirector(Director director) {
@@ -119,7 +119,7 @@ public class FilmService {
 
     public Film updateFilm(Film newFilm) {
         genreStorage.updateGenresOfFilm(newFilm);
-        directorStorage.addDirectorOfFilm(newFilm);
+        directorStorage.updateDirectorOfFilm(newFilm);
         return filmStorage.update(newFilm);
     }
 
@@ -132,7 +132,9 @@ public class FilmService {
             throw new NotFoundException(FILM_NOT_FOUND + filmId);
         }
 
-        filmStorage.addLike(filmId, userId);
+        if (!filmStorage.checkLikesUserByFilmId(filmId, userId)) {
+            filmStorage.addLike(filmId, userId);
+        }
     }
 
     public void removeLike(Integer filmId, Integer userId) {

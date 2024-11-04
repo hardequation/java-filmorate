@@ -141,9 +141,13 @@ public class FilmController {
                 film.setGenres(service.findGenresForFilm(film.getId()));
                 film.setDirectors(service.findDirectorsForFilm(film.getId()));
             }
-            return ResponseEntity.ok(films.stream()
-                    .map(filmMapper::map)
-                    .toList());
+            if (films.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.ok(films.stream()
+                        .map(filmMapper::map)
+                        .toList());
+            }
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());

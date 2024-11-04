@@ -98,6 +98,11 @@ public class UserController {
     public List<FilmDto> getRecommendations(@PathVariable Integer id) {
         List<Film> recommendations = filmService.getFilmRecommendationsForUser(id);
 
+        for (Film film : recommendations) {
+            film.setGenres(filmService.findGenresForFilm(film.getId()));
+            film.setDirectors(filmService.findDirectorsForFilm(film.getId()));
+        }
+
         return recommendations.stream().map(filmMapper::map).toList();
     }
 

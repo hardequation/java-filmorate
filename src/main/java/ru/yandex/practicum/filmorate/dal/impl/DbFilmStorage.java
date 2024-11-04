@@ -345,6 +345,13 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
+    public boolean checkLikesUserByFilmId(Integer filmId, Integer userId) {
+        String sqlQuery = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND liked_user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, filmId, userId);
+        return count != null && count > 0;
+    }
+
+    @Override
     public List<Film> getFilmRecommendationsForUser(int userId) {
         String sql = "SELECT DISTINCT f.film_id AS film_id, " +
                 "                f.name AS film_name, " +
@@ -386,8 +393,7 @@ public class DbFilmStorage implements FilmStorage {
                 "    SELECT film_id " +
                 "    FROM film_likes " +
                 "    WHERE liked_user_id = ? " +
-                ");";
-
+                ")";
 
         return jdbcTemplate.query(sql, filmRowMapper, userId, userId, userId, userId, userId);
     }

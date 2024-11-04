@@ -19,7 +19,7 @@ public interface DirectorStorage {
 
     void deleteDirector(int directorId);
 
-    void addDirectorOfFilm(Film film);
+    void updateDirectorOfFilm(Film film);
 
     List<Director> findDirectorForFilm(int filmId);
 }
