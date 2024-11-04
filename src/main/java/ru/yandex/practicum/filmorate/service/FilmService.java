@@ -131,8 +131,9 @@ public class FilmService {
         if (!filmStorage.containsFilm(filmId)) {
             throw new NotFoundException(FILM_NOT_FOUND + filmId);
         }
-
-        filmStorage.addLike(filmId, userId);
+        if (!filmStorage.checkLikesUserByFilmId(filmId, userId)) {
+            filmStorage.addLike(filmId, userId);
+        }
     }
 
     public void removeLike(Integer filmId, Integer userId) {
