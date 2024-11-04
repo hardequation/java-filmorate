@@ -127,7 +127,7 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public List<Review> findByFilmId(int filmId, int size) {
-        String sql = "SELECT * FROM reviews WHERE film_id = ? LIMIT ?";
+        String sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
 
         return jdbcTemplate.query(sql, rowMapper, filmId, size);
     }
