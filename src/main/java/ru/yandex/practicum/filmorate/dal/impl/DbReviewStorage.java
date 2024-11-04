@@ -144,10 +144,11 @@ public class DbReviewStorage implements ReviewStorage {
         String updateSql = "UPDATE reviews r SET useful = ( " +
                 "SELECT COUNT(CASE WHEN is_like = true THEN 1 END) - COUNT(CASE WHEN is_like = false THEN 1 END) " +
                 "FROM review_likes rl " +
-                "WHERE rl.review_id = r.review_id and rl.review_id = ?);";
+                "WHERE rl.review_id = r.review_id and rl.review_id = ?)" +
+                "WHERE r.review_id = ? ";
 
         try {
-            jdbcTemplate.update(updateSql, reviewId);
+            jdbcTemplate.update(updateSql, reviewId, reviewId);
         } catch (DataIntegrityViolationException e) {
             throw new ValidationException(e.getMessage());
         }
