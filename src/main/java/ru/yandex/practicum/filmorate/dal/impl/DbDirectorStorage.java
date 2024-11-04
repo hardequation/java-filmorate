@@ -17,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -96,6 +97,7 @@ public class DbDirectorStorage implements DirectorStorage {
         String addFilmDirector = "MERGE INTO films_directors (film_id, director_id) VALUES (?, ?)";
 
         List<Director> directors = film.getDirectors().stream().toList();
+        film.setDirectors(new LinkedHashSet<>(directors));
         if (directors.isEmpty()) {
             return;
         }

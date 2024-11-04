@@ -85,7 +85,7 @@ public class FilmService {
         return new LinkedHashSet<>(genreStorage.findGenresForFilm(id));
     }
 
-    public void addGenresForFilm(Film film) {
+    public void updateGenresForFilm(Film film) {
         genreStorage.updateGenresOfFilm(film);
     }
 
@@ -93,7 +93,7 @@ public class FilmService {
         return new LinkedHashSet<>(directorStorage.findDirectorForFilm(id));
     }
 
-    public void addDirectorsForFilm(Film film) {
+    public void updateDirectorsForFilm(Film film) {
         directorStorage.updateDirectorOfFilm(film);
     }
 
@@ -119,7 +119,7 @@ public class FilmService {
 
     public Film updateFilm(Film newFilm) {
         genreStorage.updateGenresOfFilm(newFilm);
-        directorStorage.updateDirectorOfFilm(newFilm);
+        directorStorage.addDirectorOfFilm(newFilm);
         return filmStorage.update(newFilm);
     }
 
@@ -132,9 +132,7 @@ public class FilmService {
             throw new NotFoundException(FILM_NOT_FOUND + filmId);
         }
 
-        if (!filmStorage.checkLikesUserByFilmId(filmId, userId)) {
-            filmStorage.addLike(filmId, userId);
-        }
+        filmStorage.addLike(filmId, userId);
     }
 
     public void removeLike(Integer filmId, Integer userId) {

@@ -59,8 +59,8 @@ public class FilmController {
     public FilmDto create(@Valid @RequestBody CreateFilmDto filmDto) {
         Film toCreate = filmMapper.map(filmDto);
         Film createdFilm = service.create(toCreate);
-        service.addGenresForFilm(createdFilm);
-        service.addDirectorsForFilm(createdFilm);
+        service.updateGenresForFilm(createdFilm);
+        service.updateDirectorsForFilm(createdFilm);
         createdFilm.setGenres(toCreate.getGenres());
         createdFilm.setDirectors(toCreate.getDirectors());
         return filmMapper.map(createdFilm);
@@ -75,6 +75,10 @@ public class FilmController {
     public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
         Film film = filmMapper.map(filmDto);
         Film updatedFilm = service.updateFilm(film);
+        service.updateGenresForFilm(updatedFilm);
+        service.updateDirectorsForFilm(updatedFilm);
+        updatedFilm.setGenres(film.getGenres());
+        updatedFilm.setDirectors(film.getDirectors());
         return filmMapper.map(updatedFilm);
     }
 
