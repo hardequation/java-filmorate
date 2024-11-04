@@ -112,7 +112,7 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public List<Review> findAll() {
-        return jdbcTemplate.query("SELECT * FROM reviews", rowMapper);
+        return jdbcTemplate.query("SELECT * FROM reviews ORDER BY useful DESC", rowMapper);
     }
 
     @Override
