@@ -119,7 +119,7 @@ public class FilmService {
 
     public Film updateFilm(Film newFilm) {
         genreStorage.updateGenresOfFilm(newFilm);
-        directorStorage.addDirectorOfFilm(newFilm);
+        directorStorage.updateDirectorOfFilm(newFilm);
         return filmStorage.update(newFilm);
     }
 
