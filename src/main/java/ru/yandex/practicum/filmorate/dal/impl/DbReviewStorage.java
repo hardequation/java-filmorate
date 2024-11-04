@@ -80,7 +80,7 @@ public class DbReviewStorage implements ReviewStorage {
             throw new NotFoundException(REVIEW_NOT_FOUND + newReview.getReviewId());
         }
         userStorage.addFeed(newReview.getReviewId(), newReview.getUserId(), REVIEW, UPDATE);
-        return newReview;
+        return findById(newReview.getReviewId()).stream().findFirst().orElse(null);
     }
 
     @Override
