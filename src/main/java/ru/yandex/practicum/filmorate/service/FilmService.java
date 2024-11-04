@@ -85,7 +85,7 @@ public class FilmService {
         return new LinkedHashSet<>(genreStorage.findGenresForFilm(id));
     }
 
-    public void addGenresForFilm(Film film) {
+    public void updateGenresForFilm(Film film) {
         genreStorage.updateGenresOfFilm(film);
     }
 
@@ -93,8 +93,8 @@ public class FilmService {
         return new LinkedHashSet<>(directorStorage.findDirectorForFilm(id));
     }
 
-    public void addDirectorsForFilm(Film film) {
-        directorStorage.addDirectorOfFilm(film);
+    public void updateDirectorsForFilm(Film film) {
+        directorStorage.updateDirectorOfFilm(film);
     }
 
     public Director createDirector(Director director) {
@@ -119,7 +119,7 @@ public class FilmService {
 
     public Film updateFilm(Film newFilm) {
         genreStorage.updateGenresOfFilm(newFilm);
-        directorStorage.addDirectorOfFilm(newFilm);
+        directorStorage.updateDirectorOfFilm(newFilm);
         return filmStorage.update(newFilm);
     }
 

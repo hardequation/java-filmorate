@@ -306,9 +306,9 @@ class DbFilmStorageIntegrationTest {
                         .birthday(LocalDate.of(1980, 10, 27))
                         .build());
 
-        directorStorage.addDirectorOfFilm(film1);
-        directorStorage.addDirectorOfFilm(film2);
-        directorStorage.addDirectorOfFilm(film3);
+        directorStorage.updateDirectorOfFilm(film1);
+        directorStorage.updateDirectorOfFilm(film2);
+        directorStorage.updateDirectorOfFilm(film3);
 
         filmStorage.addLike(film1.getId(), user1.getId());
         filmStorage.addLike(film2.getId(), user1.getId());

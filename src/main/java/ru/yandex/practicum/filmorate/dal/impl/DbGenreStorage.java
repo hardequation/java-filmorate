@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,6 +55,7 @@ public class DbGenreStorage implements GenreStorage {
 
         String addFilmGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
         List<Genre> genres = film.getGenres().stream().toList();
+        film.setGenres(new LinkedHashSet<>(genres));
         if (genres.isEmpty()) {
             return;
         }

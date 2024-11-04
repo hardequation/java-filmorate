@@ -17,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -89,10 +90,14 @@ public class DbDirectorStorage implements DirectorStorage {
     }
 
     @Override
-    public void addDirectorOfFilm(Film film) {
+    public void updateDirectorOfFilm(Film film) {
+        String removeFilmGenre = "DELETE FROM films_directors where film_id = ?";
+        jdbcTemplate.update(removeFilmGenre, film.getId());
+
         String addFilmDirector = "MERGE INTO films_directors (film_id, director_id) VALUES (?, ?)";
 
         List<Director> directors = film.getDirectors().stream().toList();
+        film.setDirectors(new LinkedHashSet<>(directors));
         if (directors.isEmpty()) {
             return;
         }
