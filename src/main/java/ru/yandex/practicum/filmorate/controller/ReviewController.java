@@ -60,8 +60,13 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<ReviewDto> getReview(@RequestParam int filmId, @RequestParam(defaultValue = "10") @Positive int count) {
-        List<Review> reviews = service.findByFilmId(filmId, count);
+    public List<ReviewDto> getReview(@RequestParam(required = false) Integer filmId, @RequestParam(defaultValue = "10") @Positive int count) {
+        List<Review> reviews;
+        if (filmId == null) {
+            reviews = service.findAll();
+        } else {
+            reviews = service.findByFilmId(filmId, count);
+        }
         return reviews.stream()
                 .map(reviewMapper::map)
                 .toList();

@@ -15,6 +15,8 @@ public interface ReviewStorage {
 
     void removeAll();
 
+    List<Review> findAll();
+
     Optional<Review> findById(int id);
 
     List<Review> findByFilmId(int id, int size);

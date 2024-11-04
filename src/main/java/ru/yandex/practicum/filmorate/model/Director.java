@@ -6,6 +6,9 @@ import lombok.Data;
 @Data
 @Builder
 public class Director {
+
     private int id;
+
     private String name;
+
 }

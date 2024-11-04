@@ -104,6 +104,11 @@ public class DbReviewStorage implements ReviewStorage {
     }
 
     @Override
+    public List<Review> findAll() {
+        return jdbcTemplate.query("SELECT * FROM reviews", rowMapper);
+    }
+
+    @Override
     public Optional<Review> findById(int id) {
         try {
             Review review = jdbcTemplate.queryForObject("SELECT * FROM reviews WHERE review_id = ?", rowMapper, id);

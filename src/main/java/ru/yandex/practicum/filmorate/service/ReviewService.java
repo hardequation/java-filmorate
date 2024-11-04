@@ -28,10 +28,13 @@ public class ReviewService {
         reviewStorage.remove(id);
     }
 
+    public List<Review> findAll() {
+        return reviewStorage.findAll();
+    }
+
     public Review findById(int id) {
         return reviewStorage.findById(id).orElseThrow(() -> new NotFoundException(REVIEW_NOT_FOUND + id));
     }
-
     public List<Review> findByFilmId(int filmId, int size) {
         return reviewStorage.findByFilmId(filmId, size);
     }

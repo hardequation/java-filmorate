@@ -1,16 +1,14 @@
-package ru.yandex.practicum.filmorate.dto;
+package ru.yandex.practicum.filmorate.dto.create;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class DirectorDto {
+public class CreateDirectorDto {
 
-    @NotNull
-    private int id;
+    private Integer id;
 
     @NotBlank
     private String name;
