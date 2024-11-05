@@ -121,7 +121,7 @@ class DbReviewStorageIntegrationTest {
                 .build();
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> reviewStorage.add(review));
-        assertTrue(exception.getMessage().contains("Referential integrity constraint violation: \"FK_FILM_ID4:"));
+        assertTrue(exception.getMessage().contains("Film id " + review.getFilmId() + " isn't found"));
     }
 
     @Test
@@ -138,7 +138,7 @@ class DbReviewStorageIntegrationTest {
                 .build();
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> reviewStorage.add(review));
-        assertTrue(exception.getMessage().contains("Referential integrity constraint violation: \"FK_USER_ID2:"));
+        assertTrue(exception.getMessage().contains("User id " + review.getUserId() + " isn't found"));
     }
 
     @Test
