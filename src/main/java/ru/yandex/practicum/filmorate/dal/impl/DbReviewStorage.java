@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,6 +37,16 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public Review add(Review review) {
+
+        int userId = review.getUserId();
+        int filmId = review.getFilmId();
+        if (!containsFilm(filmId)) {
+            throw new NotFoundException("Film id " + filmId + " isn't found");
+        }
+        if (!containsUser(userId)) {
+            throw new NotFoundException("User id " + userId + " isn't found");
+        }
+
         String addFilmSql = "INSERT INTO reviews (film_id, user_id, is_positive, useful, content) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
@@ -45,24 +54,22 @@ public class DbReviewStorage implements ReviewStorage {
 
         try {
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(addFilmSql, Statement.RETURN_GENERATED_KEYS);
-                ps.setInt(1, review.getFilmId());
-                ps.setInt(2, review.getUserId());
+                PreparedStatement ps = connection.prepareStatement(addFilmSql, new String[]{"REVIEW_ID"});
+                ps.setInt(1, filmId);
+                ps.setInt(2, userId);
                 ps.setBoolean(3, review.isPositive());
                 ps.setInt(4, review.getUseful());
                 ps.setString(5, review.getContent());
 
                 return ps;
             }, keyHolder);
+
+            review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+            userStorage.addFeed(review.getReviewId(), review.getUserId(), REVIEW, ADD);
+            return review;
         } catch (DataIntegrityViolationException e) {
             throw new NotFoundException(e.getMessage());
         }
-
-        int generatedId = Objects.requireNonNull(keyHolder.getKey()).intValue();
-        review.setReviewId(generatedId);
-        userStorage.addFeed(review.getReviewId(), review.getUserId(), REVIEW, ADD);
-
-        return review;
     }
 
     @Override
@@ -79,8 +86,9 @@ public class DbReviewStorage implements ReviewStorage {
         if (rowsAffected == 0) {
             throw new NotFoundException(REVIEW_NOT_FOUND + newReview.getReviewId());
         }
-        userStorage.addFeed(newReview.getReviewId(), newReview.getUserId(), REVIEW, UPDATE);
-        return newReview;
+        Review updatedReview = findById(newReview.getReviewId()).stream().findFirst().orElse(null);
+        userStorage.addFeed(updatedReview.getReviewId(), updatedReview.getUserId(), REVIEW, UPDATE);
+        return updatedReview;
     }
 
     @Override
@@ -105,7 +113,7 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public List<Review> findAll() {
-        return jdbcTemplate.query("SELECT * FROM reviews", rowMapper);
+        return jdbcTemplate.query("SELECT * FROM reviews ORDER BY useful DESC", rowMapper);
     }
 
     @Override
@@ -120,7 +128,7 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public List<Review> findByFilmId(int filmId, int size) {
-        String sql = "SELECT * FROM reviews WHERE film_id = ? LIMIT ?";
+        String sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
 
         return jdbcTemplate.query(sql, rowMapper, filmId, size);
     }
@@ -137,10 +145,11 @@ public class DbReviewStorage implements ReviewStorage {
         String updateSql = "UPDATE reviews r SET useful = ( " +
                 "SELECT COUNT(CASE WHEN is_like = true THEN 1 END) - COUNT(CASE WHEN is_like = false THEN 1 END) " +
                 "FROM review_likes rl " +
-                "WHERE rl.review_id = r.review_id and rl.review_id = ?);";
+                "WHERE rl.review_id = r.review_id and rl.review_id = ?)" +
+                "WHERE r.review_id = ? ";
 
         try {
-            jdbcTemplate.update(updateSql, reviewId);
+            jdbcTemplate.update(updateSql, reviewId, reviewId);
         } catch (DataIntegrityViolationException e) {
             throw new ValidationException(e.getMessage());
         }
@@ -167,6 +176,18 @@ public class DbReviewStorage implements ReviewStorage {
         } catch (DataIntegrityViolationException e) {
             throw new ValidationException(e.getMessage());
         }
+    }
+
+    public boolean containsUser(Integer userId) {
+        String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+        return count != null && count > 0;
+    }
+
+    public boolean containsFilm(Integer filmId) {
+        String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, filmId);
+        return count != null && count > 0;
     }
 
 }

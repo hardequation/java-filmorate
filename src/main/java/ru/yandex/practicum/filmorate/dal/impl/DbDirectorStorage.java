@@ -91,8 +91,8 @@ public class DbDirectorStorage implements DirectorStorage {
 
     @Override
     public void updateDirectorOfFilm(Film film) {
-        String removeFilmGenre = "DELETE FROM films_directors where film_id = ?";
-        jdbcTemplate.update(removeFilmGenre, film.getId());
+        String removeFilmDirector = "DELETE FROM films_directors where film_id = ?";
+        jdbcTemplate.update(removeFilmDirector, film.getId());
 
         String addFilmDirector = "MERGE INTO films_directors (film_id, director_id) VALUES (?, ?)";
 

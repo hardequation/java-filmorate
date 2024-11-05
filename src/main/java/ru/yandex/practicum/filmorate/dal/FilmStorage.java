@@ -23,6 +23,8 @@ public interface FilmStorage {
 
     void removeLike(int filmId, int userId);
 
+    boolean checkLikesUserByFilmId(Integer filmId, Integer userId);
+
     List<Film> getMostPopularFilms(int size);
 
     List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam);
@@ -44,6 +46,5 @@ public interface FilmStorage {
     List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId);
 
     List<Film> getPopularFilmsSortedByYear(Integer count, Integer year);
-
 
 }
