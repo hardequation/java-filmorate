@@ -86,8 +86,9 @@ public class DbReviewStorage implements ReviewStorage {
         if (rowsAffected == 0) {
             throw new NotFoundException(REVIEW_NOT_FOUND + newReview.getReviewId());
         }
-        userStorage.addFeed(newReview.getReviewId(), newReview.getUserId(), REVIEW, UPDATE);
-        return findById(newReview.getReviewId()).stream().findFirst().orElse(null);
+        Review updatedReview = findById(newReview.getReviewId()).stream().findFirst().orElse(null);
+        userStorage.addFeed(updatedReview.getReviewId(), updatedReview.getUserId(), REVIEW, UPDATE);
+        return updatedReview;
     }
 
     @Override
