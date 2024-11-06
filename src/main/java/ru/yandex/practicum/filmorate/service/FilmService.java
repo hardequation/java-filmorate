@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.DirectorStorage;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.GenreStorage;
 import ru.yandex.practicum.filmorate.dal.RatingStorage;
@@ -28,6 +29,7 @@ import static ru.yandex.practicum.filmorate.utils.ErrorMessages.RATING_NOT_FOUND
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
 
@@ -39,18 +41,7 @@ public class FilmService {
 
     private final DirectorStorage directorStorage;
 
-    @Autowired
-    public FilmService(FilmStorage dbFilmStorage,
-                       UserStorage dbUserStorage,
-                       RatingStorage ratingStorage,
-                       GenreStorage genreStorage,
-                       DirectorStorage directorStorage) {
-        this.filmStorage = dbFilmStorage;
-        this.userStorage = dbUserStorage;
-        this.ratingStorage = ratingStorage;
-        this.genreStorage = genreStorage;
-        this.directorStorage = directorStorage;
-    }
+    private final FeedStorage feedStorage;
 
     public List<Film> getFilms() {
         return filmStorage.findAllFilms();
@@ -137,7 +128,8 @@ public class FilmService {
         if (!filmStorage.checkLikesUserByFilmId(filmId, userId)) {
             filmStorage.addLike(filmId, userId);
         }
-        userStorage.addFeed(filmId, userId, LIKE, ADD);
+
+        feedStorage.addFeed(filmId, userId, LIKE, ADD);
     }
 
     public void removeLike(Integer filmId, Integer userId) {
@@ -150,7 +142,7 @@ public class FilmService {
         }
 
         filmStorage.removeLike(filmId, userId);
-        userStorage.addFeed(filmId, userId, LIKE, REMOVE);
+        feedStorage.addFeed(filmId, userId, LIKE, REMOVE);
     }
 
     public List<Film> getMostPopularFilms(int size) {

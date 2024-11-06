@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Feed;
@@ -10,6 +11,9 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 
+import static ru.yandex.practicum.filmorate.model.enums.EventType.FRIEND;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.REMOVE;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Slf4j
@@ -18,6 +22,8 @@ import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 public class UserService {
 
     private final UserStorage userStorage;
+
+    private final FeedStorage feedStorage;
 
     public List<User> getUsers() {
         return userStorage.findAll();
@@ -51,6 +57,7 @@ public class UserService {
         }
 
         userStorage.addFriendship(userId, newFriendId);
+        feedStorage.addFeed(newFriendId, userId, FRIEND, ADD);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
@@ -68,6 +75,7 @@ public class UserService {
         }
 
         userStorage.removeFriendship(userId, friendId);
+        feedStorage.addFeed(friendId, userId, FRIEND, REMOVE);
     }
 
     public List<User> getUserFriends(Integer id) {
@@ -93,6 +101,6 @@ public class UserService {
 
     public List<Feed> getFeedByUserId(Integer id) {
         getUser(id);
-        return userStorage.getFeedByUserId(id);
+        return feedStorage.getFeedByUserId(id);
     }
 }

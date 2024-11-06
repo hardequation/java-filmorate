@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.dal.impl.DbFeedStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
@@ -35,6 +36,8 @@ class DbUserStorageIntegrationTest {
 
     private DbUserStorage storage;
 
+    private DbFeedStorage feedStorage;
+
     private User user;
     private User user2;
 
@@ -42,6 +45,7 @@ class DbUserStorageIntegrationTest {
     void setUp() {
         UserRowMapper userRowMapper = new UserRowMapper();
         storage = new DbUserStorage(template, userRowMapper);
+        feedStorage = new DbFeedStorage(template);
         user = User.builder()
                 .name("Name")
                 .login("Login")
@@ -130,8 +134,8 @@ class DbUserStorageIntegrationTest {
         storage.add(user);
         storage.add(user2);
         storage.addFriendship(user.getId(), user2.getId());
-        storage.addFeed(1, 2, EventType.REVIEW, Operation.ADD);
+        feedStorage.addFeed(1, 2, EventType.REVIEW, Operation.ADD);
 
-        assertNotNull(storage.getFeedByUserId(user2.getId()));
+        assertNotNull(feedStorage.getFeedByUserId(user2.getId()));
     }
 }
