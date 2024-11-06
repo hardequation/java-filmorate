@@ -3,11 +3,17 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.ReviewStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
+import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.model.enums.EventType.REVIEW;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.REMOVE;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.UPDATE;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.REVIEW_NOT_FOUND;
 
 @Service
@@ -16,16 +22,27 @@ public class ReviewService {
 
     private final ReviewStorage reviewStorage;
 
+    private final UserStorage userStorage;
+
     public Review create(Review review) {
-        return reviewStorage.add(review);
+        Review createdReview = reviewStorage.add(review);
+        userStorage.addFeed(createdReview.getReviewId(), createdReview.getUserId(), REVIEW, ADD);
+        return createdReview;
     }
 
     public Review update(Review review) {
-        return reviewStorage.update(review);
+        Review updatedReview = reviewStorage.update(review);
+        userStorage.addFeed(updatedReview.getReviewId(), updatedReview.getUserId(), REVIEW, UPDATE);
+        return updatedReview;
     }
 
     public void remove(int id) {
-        reviewStorage.remove(id);
+        Optional<Review> review = reviewStorage.findById(id);
+        if (review.isPresent()) {
+            Integer userId = review.get().getUserId();
+            reviewStorage.remove(id);
+            userStorage.addFeed(id, userId, REVIEW, REMOVE);
+        }
     }
 
     public List<Review> findAll() {
