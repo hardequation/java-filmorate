@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,8 @@ import static ru.yandex.practicum.filmorate.model.FilmSortParam.POPULAR_FILMS_BY
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
+
+    private static final int FIRST_FILM_BIRTHDAY = 1895;
 
     private final FilmService service;
 
@@ -103,7 +106,7 @@ public class FilmController {
     @GetMapping("/popular")
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") @Positive Integer count,
                                          @Positive @RequestParam(required = false) Integer genreId,
-                                         @Positive @RequestParam(required = false) Integer year) {
+                                         @Min(value = FIRST_FILM_BIRTHDAY) @RequestParam(required = false) Integer year) {
         List<Film> films;
         if (genreId == null && year == null) {
             films = service.getMostPopularFilms(count);
