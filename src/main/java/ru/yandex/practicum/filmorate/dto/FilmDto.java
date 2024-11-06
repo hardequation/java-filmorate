@@ -18,6 +18,7 @@ public class FilmDto {
     private int id;
 
     @NotBlank(message = "Film name can't be blank")
+    @Size(max = 100, message = "Film name is too long")
     private String name;
 
     @NotBlank

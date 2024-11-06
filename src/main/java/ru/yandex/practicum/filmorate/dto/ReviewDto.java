@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,9 +22,11 @@ public class ReviewDto {
 
     @NotNull
     @JsonProperty("isPositive")
-    boolean isPositive;
+    Boolean isPositive;
 
     int useful;
 
+    @NotBlank
+    @Size(max = 400, message = "Content is too long")
     String content;
 }
