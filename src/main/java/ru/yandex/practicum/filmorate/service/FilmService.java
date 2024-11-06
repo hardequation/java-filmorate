@@ -20,6 +20,7 @@ import java.util.List;
 
 import static ru.yandex.practicum.filmorate.model.enums.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
+import static ru.yandex.practicum.filmorate.model.enums.Operation.REMOVE;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.DIRECTOR_NOT_FOUND;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.GENRE_NOT_FOUND;
@@ -135,9 +136,8 @@ public class FilmService {
         }
         if (!filmStorage.checkLikesUserByFilmId(filmId, userId)) {
             filmStorage.addLike(filmId, userId);
-        } else {
-            userStorage.addFeed(filmId, userId, LIKE, ADD);
         }
+        userStorage.addFeed(filmId, userId, LIKE, ADD);
     }
 
     public void removeLike(Integer filmId, Integer userId) {
@@ -150,6 +150,7 @@ public class FilmService {
         }
 
         filmStorage.removeLike(filmId, userId);
+        userStorage.addFeed(filmId, userId, LIKE, REMOVE);
     }
 
     public List<Film> getMostPopularFilms(int size) {

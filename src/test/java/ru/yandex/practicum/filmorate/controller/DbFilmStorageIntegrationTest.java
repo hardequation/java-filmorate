@@ -58,7 +58,7 @@ class DbFilmStorageIntegrationTest {
     void setUp() {
         FilmRowMapper filmRowMapper = new FilmRowMapper();
         UserRowMapper userRowMapper = new UserRowMapper();
-        filmStorage = new DbFilmStorage(template, filmRowMapper, userStorage);
+        filmStorage = new DbFilmStorage(template, filmRowMapper);
         userStorage = new DbUserStorage(template, userRowMapper);
         directorStorage = new DbDirectorStorage(template, directorRowMapper);
 

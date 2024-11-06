@@ -62,7 +62,7 @@ class DbReviewStorageIntegrationTest {
         UserRowMapper userRowMapper = new UserRowMapper();
         userStorage = new DbUserStorage(template, userRowMapper);
         reviewStorage = new DbReviewStorage(template, rowMapper);
-        filmStorage = new DbFilmStorage(template, filmRowMapper, userStorage);
+        filmStorage = new DbFilmStorage(template, filmRowMapper);
 
         film = Film.builder()
                 .name("Name")
