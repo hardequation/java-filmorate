@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +22,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/directors")
 @RequiredArgsConstructor
@@ -36,12 +34,14 @@ public class DirectorController {
     @GetMapping
     public List<DirectorDto> findAllDirectors() {
         List<Director> directors = service.getDirectors();
+        log.info("Returning list of directors");
         return directors.stream().map(mapper::map).toList();
     }
 
     @GetMapping("/{id}")
     public DirectorDto findDirectorById(@PathVariable int id) {
         Director director = service.findDirectorById(id);
+        log.info("Director {} is found", id);
         return mapper.map(director);
     }
 
@@ -49,17 +49,20 @@ public class DirectorController {
     @ResponseStatus(HttpStatus.CREATED)
     public DirectorDto createDirector(@RequestBody @Valid CreateDirectorDto directorDto) {
         Director directorSaved = service.createDirector(mapper.map(directorDto));
+        log.info("Director {} is created", directorSaved.getId());
         return mapper.map(directorSaved);
     }
 
     @PutMapping
     public DirectorDto updateDirector(@RequestBody @Valid DirectorDto directorDto) {
         Director directorSaved = service.updateDirector(mapper.map(directorDto));
+        log.info("Director {} is updated", directorSaved.getId());
         return mapper.map(directorSaved);
     }
 
     @DeleteMapping("/{id}")
     public void deleteDirector(@PathVariable int id) {
         service.deleteDirector(id);
+        log.info("Director {} is removed", id);
     }
 }
