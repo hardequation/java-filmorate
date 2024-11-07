@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashSet;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {
@@ -23,6 +24,8 @@ public class FilmRowMapper implements RowMapper<Film> {
                 .description(resultSet.getString("description"))
                 .releaseDate(resultSet.getDate("release_date").toLocalDate())
                 .duration(resultSet.getLong("duration"))
+                .genres(new LinkedHashSet<>())
+                .directors(new LinkedHashSet<>())
                 .mpa(rating)
                 .build();
     }

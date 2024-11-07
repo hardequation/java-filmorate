@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.controller.mappers;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.CreateUserDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.dto.create.CreateUserDto;
 import ru.yandex.practicum.filmorate.model.User;
 
 @Component

@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.controller.mappers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.CreateFilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.create.CreateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Component
@@ -11,8 +11,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 public class FilmMapper {
 
     private final GenreMapper genreMapper;
-
     private final MpaRatingMapper ratingMapper;
+    private final DirectorMapper directorMapper;
 
     public Film map(CreateFilmDto dto) {
         return Film.builder()
@@ -22,6 +22,7 @@ public class FilmMapper {
                 .releaseDate(dto.getReleaseDate())
                 .duration(dto.getDuration())
                 .genres(genreMapper.mapToGenreList(dto.getGenres()))
+                .directors(directorMapper.mapToDirectorList(dto.getDirectors()))
                 .build();
     }
 
@@ -34,6 +35,7 @@ public class FilmMapper {
                 .releaseDate(dto.getReleaseDate())
                 .duration(dto.getDuration())
                 .genres(genreMapper.mapToGenreList(dto.getGenres()))
+                .directors(directorMapper.mapToDirectorList(dto.getDirectors()))
                 .build();
     }
 
@@ -46,6 +48,7 @@ public class FilmMapper {
                 .releaseDate(film.getReleaseDate())
                 .duration(film.getDuration())
                 .genres(genreMapper.mapToGenreDtoList(film.getGenres()))
+                .directors(directorMapper.mapToDirectorDtoList(film.getDirectors()))
                 .build();
     }
 }

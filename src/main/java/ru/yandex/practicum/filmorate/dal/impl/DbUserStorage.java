@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,18 +22,12 @@ import java.util.Optional;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Repository
-@Qualifier("dbUserStorage")
+@RequiredArgsConstructor
 public class DbUserStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final UserRowMapper userRowMapper;
-
-    @Autowired
-    public DbUserStorage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.userRowMapper = userRowMapper;
-    }
 
     @Override
     public List<User> findAll() {
@@ -57,6 +52,12 @@ public class DbUserStorage implements UserStorage {
         user.setId(generatedId);
 
         return user;
+    }
+
+    @Override
+    public void removeUser(Integer id) {
+        String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
+        jdbcTemplate.update(deleteUserSql, id);
     }
 
     @Override
@@ -90,8 +91,8 @@ public class DbUserStorage implements UserStorage {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try {
             User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
-            return Optional.ofNullable(user);
-        } catch (Exception e) {
+            return Optional.of(user);
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
@@ -137,4 +138,5 @@ public class DbUserStorage implements UserStorage {
         String sql = "DELETE FROM users";
         jdbcTemplate.update(sql);
     }
+
 }

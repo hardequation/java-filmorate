@@ -11,6 +11,8 @@ public interface UserStorage {
 
     User add(User user);
 
+    void removeUser(Integer id);
+
     User update(User newUser);
 
     boolean contains(Integer id);

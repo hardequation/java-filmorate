@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,22 +12,16 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
+@RequiredArgsConstructor
 public class DbGenreStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     private final GenreRowMapper genreRowMapper;
-
-    @Autowired
-    public DbGenreStorage(JdbcTemplate jdbcTemplate, GenreRowMapper genreRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.genreRowMapper = genreRowMapper;
-    }
 
     @Override
     public List<Genre> findAllGenres() {
@@ -53,10 +47,13 @@ public class DbGenreStorage implements GenreStorage {
     }
 
     @Override
-    public void addGenresOfFilm(Film film) {
-        String addFilmGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
+    public void updateGenresOfFilm(Film film) {
+        String removeFilmGenre = "DELETE FROM films_genres where film_id = ?";
+        jdbcTemplate.update(removeFilmGenre, film.getId());
 
+        String addFilmGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
         List<Genre> genres = film.getGenres().stream().toList();
+        film.setGenres(new LinkedHashSet<>(genres));
         if (genres.isEmpty()) {
             return;
         }
@@ -108,4 +105,27 @@ public class DbGenreStorage implements GenreStorage {
         }
     }
 
+    @Override
+    public Map<Integer, Set<Genre>> loadFilmsGenres(List<Integer> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return Map.of();
+        }
+
+        String sql = "SELECT fg.film_id, g.genre_id, g.genre " +
+                "FROM films_genres fg " +
+                "INNER JOIN genres g ON fg.genre_id = g.genre_id " +
+                "WHERE fg.film_id IN (%s)";
+
+        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        sql = String.format(sql, placeholders);
+
+
+        return jdbcTemplate.query(sql, filmIds.toArray(new Object[0]), (rs, rowNum) -> {
+                    Genre genre = genreRowMapper.mapRow(rs, rowNum);
+                    int filmId = rs.getInt("film_id");
+                    return Map.entry(filmId, new LinkedHashSet(Set.of(genre)));
+                }).stream()
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.flatMapping(e -> e.getValue().stream(), Collectors.toCollection(LinkedHashSet::new))));
+    }
 }
