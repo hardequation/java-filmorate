@@ -40,8 +40,8 @@ public class DbReviewStorage implements ReviewStorage {
             throw new NotFoundException("User id " + userId + " isn't found");
         }
 
-        String addFilmSql = "INSERT INTO reviews (film_id, user_id, is_positive, useful, content) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String addFilmSql = "INSERT INTO reviews (film_id, user_id, is_positive, content) " +
+                "VALUES (?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -51,8 +51,7 @@ public class DbReviewStorage implements ReviewStorage {
                 ps.setInt(1, filmId);
                 ps.setInt(2, userId);
                 ps.setBoolean(3, review.isPositive());
-                ps.setInt(4, review.getUseful());
-                ps.setString(5, review.getContent());
+                ps.setString(4, review.getContent());
 
                 return ps;
             }, keyHolder);
@@ -96,13 +95,22 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public List<Review> findAll() {
-        return jdbcTemplate.query("SELECT * FROM reviews ORDER BY useful DESC", rowMapper);
+        String sql = "SELECT r.*, COALESCE(SUM(rl.is_like), 0) as useful " +
+                "FROM reviews r " +
+                "LEFT JOIN review_likes rl ON r.review_id = rl.review_id " +
+                "GROUP BY r.review_id ORDER BY useful DESC";
+        return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public Optional<Review> findById(int id) {
         try {
-            Review review = jdbcTemplate.queryForObject("SELECT * FROM reviews WHERE review_id = ?", rowMapper, id);
+            String sql = "SELECT r.*, COALESCE(SUM(rl.is_like), 0) as useful " +
+                    "FROM reviews r " +
+                    "LEFT JOIN review_likes rl ON r.review_id = rl.review_id " +
+                    "WHERE r.review_id = ? " +
+                    "GROUP BY rl.review_id";
+            Review review = jdbcTemplate.queryForObject(sql, rowMapper, id);
             return Optional.of(review);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
@@ -111,8 +119,12 @@ public class DbReviewStorage implements ReviewStorage {
 
     @Override
     public List<Review> findByFilmId(int filmId, int size) {
-        String sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
-
+        String sql = "SELECT r.*, COALESCE(SUM(rl.is_like), 0) as useful " +
+                "FROM reviews r " +
+                "LEFT JOIN review_likes rl ON r.review_id = rl.review_id " +
+                "WHERE r.film_id = ? " +
+                "GROUP BY r.review_id " +
+                "ORDER BY useful DESC LIMIT ?";
         return jdbcTemplate.query(sql, rowMapper, filmId, size);
     }
 
@@ -120,19 +132,7 @@ public class DbReviewStorage implements ReviewStorage {
     public void addRating(int reviewId, int userId, boolean isLike) {
         String sql = "MERGE INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, ?)";
         try {
-            jdbcTemplate.update(sql, reviewId, userId, isLike);
-        } catch (DataIntegrityViolationException e) {
-            throw new ValidationException(e.getMessage());
-        }
-
-        String updateSql = "UPDATE reviews r SET useful = ( " +
-                "SELECT COUNT(CASE WHEN is_like = true THEN 1 END) - COUNT(CASE WHEN is_like = false THEN 1 END) " +
-                "FROM review_likes rl " +
-                "WHERE rl.review_id = r.review_id and rl.review_id = ?)" +
-                "WHERE r.review_id = ? ";
-
-        try {
-            jdbcTemplate.update(updateSql, reviewId, reviewId);
+            jdbcTemplate.update(sql, reviewId, userId, isLike ? 1 : -1);
         } catch (DataIntegrityViolationException e) {
             throw new ValidationException(e.getMessage());
         }
