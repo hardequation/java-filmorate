@@ -12,14 +12,17 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dal.impl.DbDirectorStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
+import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchingFilms;
 import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmSortParam;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilms;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsByDate;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsByLikes;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -58,7 +61,7 @@ class DbFilmStorageIntegrationTest {
     void setUp() {
         FilmRowMapper filmRowMapper = new FilmRowMapper();
         UserRowMapper userRowMapper = new UserRowMapper();
-        filmStorage = new DbFilmStorage(template, filmRowMapper);
+        filmStorage = new DbFilmStorage(new SearchingFilms(), new SortDirectorFilms(),template, filmRowMapper);
         userStorage = new DbUserStorage(template, userRowMapper);
         directorStorage = new DbDirectorStorage(template, directorRowMapper);
 
@@ -229,7 +232,7 @@ class DbFilmStorageIntegrationTest {
 
         List<Film> popularFilmsAfterRemove = filmStorage.getMostPopularFilms(1);
         assertEquals(1, popularFilmsAfterRemove.size());
-        assertEquals(film2, popularFilmsAfterRemove.get(0));
+        assertEquals(film2, popularFilmsAfterRemove.getFirst());
     }
 
     @Test
@@ -317,8 +320,8 @@ class DbFilmStorageIntegrationTest {
         filmStorage.addLike(film3.getId(), user2.getId());
         filmStorage.addLike(film3.getId(), user3.getId());
 
-        List<Film> filmsByDirectorSortedByYear = filmStorage.getFilmsByDirectorSorted(director.getId(), FilmSortParam.FILMS_BY_RELEASE_DATE);
-        List<Film> filmsByDirectorSortedByLikes = filmStorage.getFilmsByDirectorSorted(director.getId(), FilmSortParam.POPULAR_FILMS_BY_LIKES);
+        List<Film> filmsByDirectorSortedByYear = filmStorage.getFilmsByDirectorSorted(director.getId(), new SortDirectorFilmsByDate());
+        List<Film> filmsByDirectorSortedByLikes = filmStorage.getFilmsByDirectorSorted(director.getId(), new SortDirectorFilmsByLikes());
 
         assertEquals(film1.getId(), filmsByDirectorSortedByYear.getFirst().getId());
         assertEquals(film3.getId(), filmsByDirectorSortedByLikes.getFirst().getId());
@@ -441,6 +444,6 @@ class DbFilmStorageIntegrationTest {
         List<Film> recommendations = filmStorage.getFilmRecommendationsForUser(user1.getId());
 
         assertEquals(1, recommendations.size());
-        assertEquals(film2, recommendations.get(0));
+        assertEquals(film2, recommendations.getFirst());
     }
 }

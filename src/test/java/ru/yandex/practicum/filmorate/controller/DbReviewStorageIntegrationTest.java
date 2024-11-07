@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbReviewStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
+import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchingFilms;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
@@ -21,6 +22,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilms;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -62,7 +64,7 @@ class DbReviewStorageIntegrationTest {
         UserRowMapper userRowMapper = new UserRowMapper();
         userStorage = new DbUserStorage(template, userRowMapper);
         reviewStorage = new DbReviewStorage(template, rowMapper);
-        filmStorage = new DbFilmStorage(template, filmRowMapper);
+        filmStorage = new DbFilmStorage(new SearchingFilms(), new SortDirectorFilms(), template, filmRowMapper);
 
         film = Film.builder()
                 .name("Name")

@@ -1,9 +1,11 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.film;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
 import ru.yandex.practicum.filmorate.dal.DirectorStorage;
-import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.GenreStorage;
 import ru.yandex.practicum.filmorate.dal.RatingStorage;
@@ -12,12 +14,16 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmSortParam;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsByDate;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsByLikes;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsStrategy;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import static ru.yandex.practicum.filmorate.model.enums.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
@@ -29,19 +35,30 @@ import static ru.yandex.practicum.filmorate.utils.ErrorMessages.RATING_NOT_FOUND
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
-
     private final UserStorage userStorage;
-
     private final RatingStorage ratingStorage;
-
     private final GenreStorage genreStorage;
-
     private final DirectorStorage directorStorage;
+    private static final Map<String, SortDirectorFilmsStrategy> SORT_DIRECTOR_FILMS_STRATEGIES = Map.of(
+            "year", new SortDirectorFilmsByDate(),
+            "likes", new SortDirectorFilmsByLikes()
+    );
 
-    private final FeedStorage feedStorage;
+    @Autowired
+    public FilmService(FilmStorage dbFilmStorage,
+                       UserStorage dbUserStorage,
+                       RatingStorage ratingStorage,
+                       GenreStorage genreStorage,
+                       DirectorStorage directorStorage) {
+        this.filmStorage = dbFilmStorage;
+        this.userStorage = dbUserStorage;
+        this.ratingStorage = ratingStorage;
+        this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
+    }
 
     public List<Film> getFilms() {
         return filmStorage.findAllFilms();
@@ -128,8 +145,7 @@ public class FilmService {
         if (!filmStorage.checkLikesUserByFilmId(filmId, userId)) {
             filmStorage.addLike(filmId, userId);
         }
-
-        feedStorage.addFeed(filmId, userId, LIKE, ADD);
+        userStorage.addFeed(filmId, userId, LIKE, ADD);
     }
 
     public void removeLike(Integer filmId, Integer userId) {
@@ -142,7 +158,7 @@ public class FilmService {
         }
 
         filmStorage.removeLike(filmId, userId);
-        feedStorage.addFeed(filmId, userId, LIKE, REMOVE);
+        userStorage.addFeed(filmId, userId, LIKE, REMOVE);
     }
 
     public List<Film> getMostPopularFilms(int size) {
@@ -175,8 +191,35 @@ public class FilmService {
         return foundedFilms;
     }
 
-    public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
-        return filmStorage.getFilmsByDirectorSorted(directorId, sortParam);
+    public ResponseEntity<Object> getFilmsByDirectorSorted(int directorId, String sortParam, FilmMapper filmMapper) {
+        try {
+            List<Film> films;
+            if (SORT_DIRECTOR_FILMS_STRATEGIES.containsKey(sortParam)) {
+                films = filmStorage.getFilmsByDirectorSorted(directorId, SORT_DIRECTOR_FILMS_STRATEGIES.get(sortParam.toLowerCase()));
+            } else {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Invalid sortBy parameter: '" + sortParam +
+                        "'. Allowed values - year, likes");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            for (Film film : films) {
+                film.setGenres(findGenresForFilm(film.getId()));
+                film.setDirectors(findDirectorsForFilm(film.getId()));
+            }
+            if (films.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.ok(films.stream()
+                        .map(filmMapper::map)
+                        .toList());
+            }
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.internalServerError().body("Internal Server Error");
+        }
     }
 
     public List<Film> getPopularFilmsSortedByGenreAndYear(Integer count, Integer genreId, Integer year) {

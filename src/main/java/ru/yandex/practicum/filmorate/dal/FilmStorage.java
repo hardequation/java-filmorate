@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmSortParam;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsStrategy;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +27,7 @@ public interface FilmStorage {
 
     List<Film> getMostPopularFilms(int size);
 
-    List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam);
+    List<Film> getFilmsByDirectorSorted(int directorId, SortDirectorFilmsStrategy sortDirectorFilmsStrategy);
 
     List<Film> getCommonFilms(int userId, int friendId);
 

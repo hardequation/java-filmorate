@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.ReviewStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -25,17 +24,15 @@ public class ReviewService {
 
     private final UserStorage userStorage;
 
-    private final FeedStorage feedStorage;
-
     public Review create(Review review) {
         Review createdReview = reviewStorage.add(review);
-        feedStorage.addFeed(createdReview.getReviewId(), createdReview.getUserId(), REVIEW, ADD);
+        userStorage.addFeed(createdReview.getReviewId(), createdReview.getUserId(), REVIEW, ADD);
         return createdReview;
     }
 
     public Review update(Review review) {
         Review updatedReview = reviewStorage.update(review);
-        feedStorage.addFeed(updatedReview.getReviewId(), updatedReview.getUserId(), REVIEW, UPDATE);
+        userStorage.addFeed(updatedReview.getReviewId(), updatedReview.getUserId(), REVIEW, UPDATE);
         return updatedReview;
     }
 
@@ -44,7 +41,7 @@ public class ReviewService {
         if (review.isPresent()) {
             Integer userId = review.get().getUserId();
             reviewStorage.remove(id);
-            feedStorage.addFeed(id, userId, REVIEW, REMOVE);
+            userStorage.addFeed(id, userId, REVIEW, REMOVE);
         }
     }
 

@@ -23,14 +23,9 @@ import ru.yandex.practicum.filmorate.controller.mappers.MpaRatingMapper;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.create.CreateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static ru.yandex.practicum.filmorate.model.FilmSortParam.FILMS_BY_RELEASE_DATE;
-import static ru.yandex.practicum.filmorate.model.FilmSortParam.POPULAR_FILMS_BY_LIKES;
 
 @Slf4j
 @Validated
@@ -129,39 +124,7 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public ResponseEntity<Object> getFilmsByDirector(@PathVariable Integer directorId,
                                                      @RequestParam(name = "sortBy", required = false) String sortBy) {
-        try {
-            List<Film> films;
-            switch (sortBy.toLowerCase()) {
-                case "year":
-                    films = service.getFilmsByDirectorSorted(directorId, FILMS_BY_RELEASE_DATE);
-                    break;
-                case "likes":
-                    films = service.getFilmsByDirectorSorted(directorId, POPULAR_FILMS_BY_LIKES);
-                    break;
-                default:
-                    Map<String, Object> errorResponse = new HashMap<>();
-                    errorResponse.put("error", "Invalid sortBy parameter: '" + sortBy +
-                            "'. Allowed values - year, likes");
-                    return ResponseEntity.badRequest().body(errorResponse);
-            }
-            for (Film film : films) {
-                film.setGenres(service.findGenresForFilm(film.getId()));
-                film.setDirectors(service.findDirectorsForFilm(film.getId()));
-            }
-            if (films.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            } else {
-                return ResponseEntity.ok(films.stream()
-                        .map(filmMapper::map)
-                        .toList());
-            }
-        } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError().body("Internal Server Error");
-        }
+        return (ResponseEntity<Object>) service.getFilmsByDirectorSorted(directorId, sortBy, filmMapper);
     }
 
     @GetMapping("/common")

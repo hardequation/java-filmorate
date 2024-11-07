@@ -8,11 +8,16 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchByDirector;
+import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchByDirectorAndTitle;
+import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchByTitle;
+import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchingFilms;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmSortParam;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilms;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsStrategy;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -27,9 +32,9 @@ import static ru.yandex.practicum.filmorate.utils.ErrorMessages.FILM_NOT_FOUND;
 @Repository
 @RequiredArgsConstructor
 public class DbFilmStorage implements FilmStorage {
-
+    private final SearchingFilms searchingFilms;
+    private final SortDirectorFilms sortDirectorFilms;
     private final JdbcTemplate jdbcTemplate;
-
     private final FilmRowMapper filmRowMapper;
 
     @Override
@@ -162,23 +167,9 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsByDirectorSorted(int directorId, FilmSortParam sortParam) {
-        String filmsSql = "SELECT " +
-                "f.film_id AS film_id, " +
-                "f.name AS film_name, " +
-                "f.description AS description, " +
-                "f.release_date AS release_date, " +
-                "f.duration AS duration, " +
-                "r.rating_id AS rating_id, " +
-                "r.rating_name AS rating_name " +
-                "FROM films AS f " +
-                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
-                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
-                "LEFT JOIN films_directors fd on f.film_id = fd.film_id " +
-                "WHERE fd.director_id = ? " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating_name " +
-                "ORDER BY " + sortParam.getSortParam();
-        return jdbcTemplate.query(filmsSql, filmRowMapper, directorId);
+    public List<Film> getFilmsByDirectorSorted(int directorId, SortDirectorFilmsStrategy sortDirectorFilmsStrategy) {
+        sortDirectorFilms.setSearchStrategy(sortDirectorFilmsStrategy);
+        return jdbcTemplate.query(sortDirectorFilms.searchFilms(directorId), filmRowMapper, directorId);
     }
 
     @Override
@@ -211,62 +202,21 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> searchFilmsByTitle(String query) {
-        String title = "%" + query + "%";
-        String sqlQuery = "SELECT f.film_id AS film_id, f.name AS film_name, f.description AS description, " +
-                "f.release_date AS release_date, f.duration AS duration, " +
-                "r.rating_id AS rating_id, r.rating_name AS rating_name, " +
-                "g.genre AS genre, g.genre_id AS genre_id " +
-                "FROM films AS f " +
-                "LEFT JOIN films_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres g ON g.genre_id = fg.genre_id " +
-                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
-                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
-                "LEFT JOIN films_directors fd ON f.film_id = fd.film_id " +
-                "WHERE UPPER(f.name) LIKE UPPER(?) " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "r.rating_id, r.rating_name, g.genre " +
-                "ORDER BY COUNT(fl.film_id) DESC;";
-        return jdbcTemplate.query(sqlQuery, filmRowMapper, title);
+    public List<Film> searchFilmsByDirector(String query) {
+        searchingFilms.setSearchStrategy(new SearchByDirector(jdbcTemplate, filmRowMapper));
+        return searchingFilms.searchFilms(query);
     }
 
     @Override
-    public List<Film> searchFilmsByDirector(String query) {
-        String directorName = "%" + query + "%";
-        String sqlQuery = "SELECT f.film_id AS film_id, f.name AS film_name, f.description AS description, " +
-                "f.release_date AS release_date, f.duration AS duration, " +
-                "r.rating_id AS rating_id, r.rating_name AS rating_name, " +
-                "d.director_name AS director_name " +
-                "FROM films AS f " +
-                "LEFT JOIN films_directors fd ON f.film_id = fd.film_id " +
-                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
-                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
-                "WHERE UPPER(d.director_name) LIKE UPPER(?) " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "r.rating_id, r.rating_name, d.director_name " +
-                "ORDER BY COUNT(fl.film_id) DESC;";
-        return jdbcTemplate.query(sqlQuery, filmRowMapper, directorName);
+    public List<Film> searchFilmsByTitle(String query) {
+        searchingFilms.setSearchStrategy(new SearchByTitle(jdbcTemplate, filmRowMapper));
+        return searchingFilms.searchFilms(query);
     }
-
 
     @Override
     public List<Film> searchFilmsByTitleAndDirector(String query) {
-        String params = "%" + query + "%";
-        String sqlQuery = "SELECT f.film_id AS film_id, f.name AS film_name, f.description AS description, " +
-                "f.release_date AS release_date, f.duration AS duration, " +
-                "r.rating_id AS rating_id, r.rating_name AS rating_name, " +
-                "d.director_name AS director_name " +
-                "FROM films AS f " +
-                "LEFT JOIN films_directors fd ON f.film_id = fd.film_id " +
-                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
-                "JOIN ratings r ON r.rating_id = f.mpa_rating_id " +
-                "WHERE (UPPER(d.director_name) LIKE UPPER(?) OR UPPER(f.name) LIKE UPPER(?)) " +
-                "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
-                "r.rating_id, r.rating_name, d.director_name " +
-                "ORDER BY COUNT(fl.film_id) DESC";
-        return jdbcTemplate.query(sqlQuery, filmRowMapper, params, params);
+        searchingFilms.setSearchStrategy(new SearchByDirectorAndTitle(jdbcTemplate, filmRowMapper));
+        return searchingFilms.searchFilms(query);
     }
 
     @Override
