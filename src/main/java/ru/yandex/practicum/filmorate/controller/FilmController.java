@@ -25,7 +25,6 @@ import ru.yandex.practicum.filmorate.dto.create.CreateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 

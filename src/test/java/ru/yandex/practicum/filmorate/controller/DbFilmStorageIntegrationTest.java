@@ -12,7 +12,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dal.impl.DbDirectorStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
-import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchingFilms;
+import ru.yandex.practicum.filmorate.service.film.Searching.SearchingFilms;
 import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;

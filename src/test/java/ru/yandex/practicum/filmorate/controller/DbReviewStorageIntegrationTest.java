@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.impl.DbFilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbReviewStorage;
 import ru.yandex.practicum.filmorate.dal.impl.DbUserStorage;
-import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchingFilms;
+import ru.yandex.practicum.filmorate.service.film.Searching.SearchingFilms;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
