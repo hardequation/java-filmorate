@@ -23,6 +23,7 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FeedStorage feedStorage;
+
     public List<User> getUsers() {
         return userStorage.findAll();
     }
