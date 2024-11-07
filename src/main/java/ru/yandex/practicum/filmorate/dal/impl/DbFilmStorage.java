@@ -8,16 +8,13 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchByDirector;
-import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchByDirectorAndTitle;
-import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchByTitle;
-import ru.yandex.practicum.filmorate.dal.impl.Searching.SearchingFilms;
+import ru.yandex.practicum.filmorate.service.film.Searching.*;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilms;
+import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsStrategy;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilms;
-import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsStrategy;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -202,21 +199,9 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> searchFilmsByDirector(String query) {
-        searchingFilms.setSearchStrategy(new SearchByDirector(jdbcTemplate, filmRowMapper));
-        return searchingFilms.searchFilms(query);
-    }
-
-    @Override
-    public List<Film> searchFilmsByTitle(String query) {
-        searchingFilms.setSearchStrategy(new SearchByTitle(jdbcTemplate, filmRowMapper));
-        return searchingFilms.searchFilms(query);
-    }
-
-    @Override
-    public List<Film> searchFilmsByTitleAndDirector(String query) {
-        searchingFilms.setSearchStrategy(new SearchByDirectorAndTitle(jdbcTemplate, filmRowMapper));
-        return searchingFilms.searchFilms(query);
+    public List<Film> searchFilmsBy(String query, SearchStrategy searchStrategy) {
+        searchingFilms.setSearchStrategy(searchStrategy);
+        return jdbcTemplate.query(searchingFilms.searchFilms(query), filmRowMapper);
     }
 
     @Override

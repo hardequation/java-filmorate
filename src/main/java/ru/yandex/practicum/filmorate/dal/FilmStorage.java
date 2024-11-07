@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.Searching.SearchStrategy;
 import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsStrategy;
 
 import java.util.List;
@@ -35,11 +36,7 @@ public interface FilmStorage {
 
     void removeAll();
 
-    List<Film> searchFilmsByDirector(String query);
-
-    List<Film> searchFilmsByTitle(String query);
-
-    List<Film> searchFilmsByTitleAndDirector(String query);
+    List<Film> searchFilmsBy(String query, SearchStrategy searchStrategy);
 
     List<Film> getPopularFilmsSortedByGenreAndYear(Integer count, Integer genreId, Integer year);
 

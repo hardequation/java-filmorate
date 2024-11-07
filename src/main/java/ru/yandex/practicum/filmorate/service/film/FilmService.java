@@ -16,14 +16,16 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.service.film.Searching.*;
 import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsByDate;
 import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsByLikes;
 import ru.yandex.practicum.filmorate.service.film.Sorting.SortDirectorFilmsStrategy;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 
 import static ru.yandex.practicum.filmorate.model.enums.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
@@ -45,6 +47,11 @@ public class FilmService {
     private static final Map<String, SortDirectorFilmsStrategy> SORT_DIRECTOR_FILMS_STRATEGIES = Map.of(
             "year", new SortDirectorFilmsByDate(),
             "likes", new SortDirectorFilmsByLikes()
+    );
+    private static final Map<Set<String>, SearchStrategy> SEARCH__FILMS_STRATEGIES = Map.of(
+            Set.of("director"), new SearchByDirector(),
+            Set.of("title"), new SearchByTitle(),
+            Set.of("director", "title"), new SearchByDirectorAndTitle()
     );
 
     @Autowired
@@ -165,23 +172,15 @@ public class FilmService {
         return filmStorage.getMostPopularFilms(size);
     }
 
-    public List<Film> searchFilms(String query, List<String> by) {
+    public List<Film> searchFilms(String query, Set<String> by) {
         List<Film> foundedFilms;
         if (by == null || by.isEmpty()) {
             throw new ValidationException("Передано некорректное число параметров");
         } else {
-            if (by.size() == 2 && by.contains("title") && by.contains("director")) {
-                foundedFilms = filmStorage.searchFilmsByTitleAndDirector(query);
-            } else if (by.size() == 1) {
-                if (by.getFirst().equalsIgnoreCase("title")) {
-                    foundedFilms = filmStorage.searchFilmsByTitle(query);
-                } else if (by.getFirst().equalsIgnoreCase("director")) {
-                    foundedFilms = filmStorage.searchFilmsByDirector(query);
-                } else {
-                    throw new NotFoundException("Неверно указан параметр поиска");
-                }
+            if (SEARCH__FILMS_STRATEGIES.containsKey(by)) {
+                foundedFilms = filmStorage.searchFilmsBy(query, SEARCH__FILMS_STRATEGIES.get(by));
             } else {
-                throw new ValidationException("Передано некорректное число параметров");
+                throw new NotFoundException("Неверно указан параметр поиска");
             }
         }
         for (Film film : foundedFilms) {
