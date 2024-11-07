@@ -9,25 +9,16 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.enums.EventType;
-import ru.yandex.practicum.filmorate.model.enums.Operation;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static ru.yandex.practicum.filmorate.model.enums.EventType.FRIEND;
-import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
-import static ru.yandex.practicum.filmorate.model.enums.Operation.REMOVE;
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Repository
@@ -133,7 +124,6 @@ public class DbUserStorage implements UserStorage {
         String sql = "INSERT INTO friendship (user_id, friend_id) VALUES (?, ?)";
 
         jdbcTemplate.update(sql, userId, friendId);
-        addFeed(friendId, userId, FRIEND, ADD);
     }
 
     @Override
@@ -141,7 +131,6 @@ public class DbUserStorage implements UserStorage {
         String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
 
         jdbcTemplate.update(sql, userId, friendId);
-        addFeed(friendId, userId, FRIEND, REMOVE);
     }
 
     @Override
@@ -150,30 +139,4 @@ public class DbUserStorage implements UserStorage {
         jdbcTemplate.update(sql);
     }
 
-    @Override
-    public List<Feed> getFeedByUserId(Integer userId) {
-        String sqlQuery = "SELECT * FROM feed WHERE user_id = ? ORDER BY time_stamp ASC";
-
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFeed, userId);
-    }
-
-    @Override
-    public void addFeed(Integer entityId, Integer userId, EventType eventType, Operation operation) {
-        String sqlQuery = "INSERT INTO feed (entity_id, user_id, time_stamp, event_type, operation) " +
-                "VALUES (?, ?, ?, ?, ?)";
-
-        jdbcTemplate.update(sqlQuery, entityId, userId, Timestamp.valueOf(LocalDateTime.now()), eventType.toString(),
-                operation.toString());
-    }
-
-    private Feed mapRowToFeed(ResultSet resultSet, int rowNum) throws SQLException {
-        return Feed.builder()
-                .eventId(resultSet.getInt("event_id"))
-                .entityId(resultSet.getInt("entity_id"))
-                .userId(resultSet.getInt("user_id"))
-                .timestamp(resultSet.getTimestamp("time_stamp").getTime())
-                .eventType(EventType.valueOf(resultSet.getString("event_type")))
-                .operation(Operation.valueOf(resultSet.getString("operation")))
-                .build();
-    }
 }

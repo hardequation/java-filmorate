@@ -1,15 +1,11 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.mappers.FilmMapper;
-import ru.yandex.practicum.filmorate.dal.DirectorStorage;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.dal.GenreStorage;
-import ru.yandex.practicum.filmorate.dal.RatingStorage;
-import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -38,9 +34,11 @@ import static ru.yandex.practicum.filmorate.utils.ErrorMessages.USER_NOT_FOUND;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FeedStorage feedStorage;
     private final RatingStorage ratingStorage;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
@@ -53,19 +51,6 @@ public class FilmService {
             Set.of("title"), new SearchByTitle(),
             Set.of("director", "title"), new SearchByDirectorAndTitle()
     );
-
-    @Autowired
-    public FilmService(FilmStorage dbFilmStorage,
-                       UserStorage dbUserStorage,
-                       RatingStorage ratingStorage,
-                       GenreStorage genreStorage,
-                       DirectorStorage directorStorage) {
-        this.filmStorage = dbFilmStorage;
-        this.userStorage = dbUserStorage;
-        this.ratingStorage = ratingStorage;
-        this.genreStorage = genreStorage;
-        this.directorStorage = directorStorage;
-    }
 
     public List<Film> getFilms() {
         return filmStorage.findAllFilms();
@@ -152,7 +137,7 @@ public class FilmService {
         if (!filmStorage.checkLikesUserByFilmId(filmId, userId)) {
             filmStorage.addLike(filmId, userId);
         }
-        userStorage.addFeed(filmId, userId, LIKE, ADD);
+        feedStorage.addFeed(filmId, userId, LIKE, ADD);
     }
 
     public void removeLike(Integer filmId, Integer userId) {
@@ -165,7 +150,7 @@ public class FilmService {
         }
 
         filmStorage.removeLike(filmId, userId);
-        userStorage.addFeed(filmId, userId, LIKE, REMOVE);
+        feedStorage.addFeed(filmId, userId, LIKE, REMOVE);
     }
 
     public List<Film> getMostPopularFilms(int size) {

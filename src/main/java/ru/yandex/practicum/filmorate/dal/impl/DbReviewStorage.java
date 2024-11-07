@@ -147,18 +147,6 @@ public class DbReviewStorage implements ReviewStorage {
             throw new ValidationException(e.getMessage());
         }
 
-        String increaseRating = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
-        String decreaseRating = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
-
-        try {
-            if (isLike) {
-                jdbcTemplate.update(decreaseRating, reviewId);
-            } else {
-                jdbcTemplate.update(increaseRating, reviewId);
-            }
-        } catch (DataIntegrityViolationException e) {
-            throw new ValidationException(e.getMessage());
-        }
     }
 
     public boolean containsUser(Integer userId) {

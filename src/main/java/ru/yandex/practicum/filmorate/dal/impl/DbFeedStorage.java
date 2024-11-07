@@ -17,13 +17,11 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class DbFeedStorage implements FeedStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
     @Override
     public List<Feed> getFeedByUserId(Integer userId) {
         String sqlQuery = "SELECT * FROM feed WHERE user_id = ? ORDER BY time_stamp ASC";
-
         return jdbcTemplate.query(sqlQuery, this::mapRowToFeed, userId);
     }
 
@@ -31,7 +29,6 @@ public class DbFeedStorage implements FeedStorage {
     public void addFeed(Integer entityId, Integer userId, EventType eventType, Operation operation) {
         String sqlQuery = "INSERT INTO feed (entity_id, user_id, time_stamp, event_type, operation) " +
                 "VALUES (?, ?, ?, ?, ?)";
-
         jdbcTemplate.update(sqlQuery, entityId, userId, Timestamp.valueOf(LocalDateTime.now()), eventType.toString(),
                 operation.toString());
     }

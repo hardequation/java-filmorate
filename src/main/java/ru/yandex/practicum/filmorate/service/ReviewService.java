@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.ReviewStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -21,18 +22,18 @@ import static ru.yandex.practicum.filmorate.utils.ErrorMessages.REVIEW_NOT_FOUND
 public class ReviewService {
 
     private final ReviewStorage reviewStorage;
-
+    private final FeedStorage feedStorage;
     private final UserStorage userStorage;
 
     public Review create(Review review) {
         Review createdReview = reviewStorage.add(review);
-        userStorage.addFeed(createdReview.getReviewId(), createdReview.getUserId(), REVIEW, ADD);
+        feedStorage.addFeed(createdReview.getReviewId(), createdReview.getUserId(), REVIEW, ADD);
         return createdReview;
     }
 
     public Review update(Review review) {
         Review updatedReview = reviewStorage.update(review);
-        userStorage.addFeed(updatedReview.getReviewId(), updatedReview.getUserId(), REVIEW, UPDATE);
+        feedStorage.addFeed(updatedReview.getReviewId(), updatedReview.getUserId(), REVIEW, UPDATE);
         return updatedReview;
     }
 
@@ -41,7 +42,7 @@ public class ReviewService {
         if (review.isPresent()) {
             Integer userId = review.get().getUserId();
             reviewStorage.remove(id);
-            userStorage.addFeed(id, userId, REVIEW, REMOVE);
+            feedStorage.addFeed(id, userId, REVIEW, REMOVE);
         }
     }
 
