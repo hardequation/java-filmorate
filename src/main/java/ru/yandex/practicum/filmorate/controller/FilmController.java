@@ -25,7 +25,9 @@ import ru.yandex.practicum.filmorate.dto.create.CreateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Validated
@@ -151,7 +153,7 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> searchFilms(@RequestParam() String query, @RequestParam() List<String> by) {
+    public List<Film> searchFilms(@RequestParam() String query, @RequestParam() Set<String> by) {
         return service.searchFilms(query, by);
     }
 }
