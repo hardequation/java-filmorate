@@ -16,11 +16,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.utils.ErrorMessages.DIRECTOR_NOT_FOUND;
 
@@ -147,5 +144,28 @@ public class DbDirectorStorage implements DirectorStorage {
                 "WHERE fd.film_id = ?";
 
         return jdbcTemplate.query(sql, directorRowMapper, filmId);
+    }
+
+    @Override
+    public Map<Integer, Set<Director>> loadFilmsDirectors(List<Integer> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return Map.of();
+        }
+
+        String sql = "SELECT fd.film_id, d.director_id, d.director_name " +
+                "FROM films_directors fd " +
+                "INNER JOIN directors d ON fd.director_id = d.director_id " +
+                "WHERE fd.film_id IN (%s)";
+
+        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        sql = String.format(sql, placeholders);
+
+        return jdbcTemplate.query(sql, filmIds.toArray(new Object[0]), (rs, rowNum) -> {
+                    Director director = directorRowMapper.mapRow(rs, rowNum);
+                    int filmId = rs.getInt("film_id");
+                    return Map.entry(filmId, new LinkedHashSet(Set.of(director)));
+                }).stream()
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.flatMapping(e -> e.getValue().stream(), Collectors.toCollection(LinkedHashSet::new))));
     }
 }

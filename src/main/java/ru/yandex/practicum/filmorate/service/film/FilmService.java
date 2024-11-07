@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.model.enums.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.model.enums.Operation.ADD;
@@ -52,8 +53,22 @@ public class FilmService {
             Set.of("director", "title"), new SearchByDirectorAndTitle()
     );
 
+    private List<Film> getFilmsFullData(List<Film> films) {
+        List<Integer> filmIds = films.stream().map(Film::getId).collect(Collectors.toList());
+        Map<Integer, Set<Genre>> filmGenres = genreStorage.loadFilmsGenres(filmIds);
+        Map<Integer, Set<Director>> filmDirectors = directorStorage.loadFilmsDirectors(filmIds);
+
+        films.forEach(film -> {
+            film.setGenres(new LinkedHashSet<>(filmGenres.getOrDefault(film.getId(), Set.of())));
+            film.setDirectors(new LinkedHashSet<>(filmDirectors.getOrDefault(film.getId(), Set.of())));
+        });
+
+        return films;
+    }
+
     public List<Film> getFilms() {
-        return filmStorage.findAllFilms();
+        List<Film> films = filmStorage.findAllFilms();
+        return getFilmsFullData(films);
     }
 
     public List<Genre> getGenres() {
@@ -154,7 +169,7 @@ public class FilmService {
     }
 
     public List<Film> getMostPopularFilms(int size) {
-        return filmStorage.getMostPopularFilms(size);
+        return getFilmsFullData(filmStorage.getMostPopularFilms(size));
     }
 
     public List<Film> searchFilms(String query, Set<String> by) {
@@ -168,27 +183,19 @@ public class FilmService {
                 throw new NotFoundException("Неверно указан параметр поиска");
             }
         }
-        for (Film film : foundedFilms) {
-            film.setGenres(findGenresForFilm(film.getId()));
-            film.setDirectors(findDirectorsForFilm(film.getId()));
-        }
-        return foundedFilms;
+        return getFilmsFullData(foundedFilms);
     }
 
     public ResponseEntity<Object> getFilmsByDirectorSorted(int directorId, String sortParam, FilmMapper filmMapper) {
         try {
             List<Film> films;
             if (SORT_DIRECTOR_FILMS_STRATEGIES.containsKey(sortParam)) {
-                films = filmStorage.getFilmsByDirectorSorted(directorId, SORT_DIRECTOR_FILMS_STRATEGIES.get(sortParam.toLowerCase()));
+                films = getFilmsFullData(filmStorage.getFilmsByDirectorSorted(directorId, SORT_DIRECTOR_FILMS_STRATEGIES.get(sortParam.toLowerCase())));
             } else {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Invalid sortBy parameter: '" + sortParam +
                         "'. Allowed values - year, likes");
                 return ResponseEntity.badRequest().body(errorResponse);
-            }
-            for (Film film : films) {
-                film.setGenres(findGenresForFilm(film.getId()));
-                film.setDirectors(findDirectorsForFilm(film.getId()));
             }
             if (films.isEmpty()) {
                 return ResponseEntity.notFound().build();
@@ -207,22 +214,22 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilmsSortedByGenreAndYear(Integer count, Integer genreId, Integer year) {
-        return filmStorage.getPopularFilmsSortedByGenreAndYear(count, genreId, year);
+        return getFilmsFullData(filmStorage.getPopularFilmsSortedByGenreAndYear(count, genreId, year));
     }
 
     public List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId) {
-        return filmStorage.getPopularFilmsSortedByGenre(count, genreId);
+        return getFilmsFullData(filmStorage.getPopularFilmsSortedByGenre(count, genreId));
     }
 
     public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year) {
-        return filmStorage.getPopularFilmsSortedByYear(count, year);
+        return getFilmsFullData(filmStorage.getPopularFilmsSortedByYear(count, year));
     }
 
     public List<Film> getCommonFilms(int userId, int friendId) {
-        return filmStorage.getCommonFilms(userId, friendId);
+        return getFilmsFullData(filmStorage.getCommonFilms(userId, friendId));
     }
 
     public List<Film> getFilmRecommendationsForUser(int userId) {
-        return filmStorage.getFilmRecommendationsForUser(userId);
+        return getFilmsFullData(filmStorage.getFilmRecommendationsForUser(userId));
     }
 }

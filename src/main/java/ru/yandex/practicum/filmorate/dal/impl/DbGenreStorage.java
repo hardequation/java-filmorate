@@ -12,10 +12,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -107,4 +105,27 @@ public class DbGenreStorage implements GenreStorage {
         }
     }
 
+    @Override
+    public Map<Integer, Set<Genre>> loadFilmsGenres(List<Integer> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return Map.of();
+        }
+
+        String sql = "SELECT fg.film_id, g.genre_id, g.genre " +
+                "FROM films_genres fg " +
+                "INNER JOIN genres g ON fg.genre_id = g.genre_id " +
+                "WHERE fg.film_id IN (%s)";
+
+        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        sql = String.format(sql, placeholders);
+
+
+        return jdbcTemplate.query(sql, filmIds.toArray(new Object[0]), (rs, rowNum) -> {
+                    Genre genre = genreRowMapper.mapRow(rs, rowNum);
+                    int filmId = rs.getInt("film_id");
+                    return Map.entry(filmId, new LinkedHashSet(Set.of(genre)));
+                }).stream()
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.flatMapping(e -> e.getValue().stream(), Collectors.toCollection(LinkedHashSet::new))));
+    }
 }

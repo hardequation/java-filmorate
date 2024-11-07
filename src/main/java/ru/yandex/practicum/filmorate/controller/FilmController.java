@@ -46,10 +46,6 @@ public class FilmController {
     @GetMapping
     public List<FilmDto> findAll() {
         List<Film> films = service.getFilms();
-        for (Film film : films) {
-            film.setGenres(service.findGenresForFilm(film.getId()));
-            film.setDirectors(service.findDirectorsForFilm(film.getId()));
-        }
         return films.stream().map(filmMapper::map).toList();
     }
 
@@ -113,10 +109,6 @@ public class FilmController {
         } else {
             films = service.getPopularFilmsSortedByYear(count, year);
         }
-        for (Film film : films) {
-            film.setGenres(service.findGenresForFilm(film.getId()));
-            film.setDirectors(service.findDirectorsForFilm(film.getId()));
-        }
         return films.stream()
                 .map(filmMapper::map)
                 .toList();
@@ -125,7 +117,7 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public ResponseEntity<Object> getFilmsByDirector(@PathVariable Integer directorId,
                                                      @RequestParam(name = "sortBy", required = false) String sortBy) {
-        return (ResponseEntity<Object>) service.getFilmsByDirectorSorted(directorId, sortBy, filmMapper);
+        return service.getFilmsByDirectorSorted(directorId, sortBy, filmMapper);
     }
 
     @GetMapping("/common")
@@ -133,11 +125,6 @@ public class FilmController {
                                                  @RequestParam("friendId") int friendId) {
         try {
             List<Film> films = service.getCommonFilms(userId, friendId);
-
-            for (Film film : films) {
-                film.setGenres(service.findGenresForFilm(film.getId()));
-                film.setDirectors(service.findDirectorsForFilm(film.getId()));
-            }
 
             return ResponseEntity.ok(films.stream()
                     .map(filmMapper::map)
